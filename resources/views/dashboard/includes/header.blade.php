@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
 
     <link rel="stylesheet" href="{{ asset('dashboard/assets/css/adminstyle.css') }}">
+        <script src="{{ asset('dashboard/assets/js/admin/sidebar.js') }}"></script>
+    {{-- <script src="{{ asset('dashboard/assets/js/admin/scheduling.js') }}"></script> --}}
+
 
     @yield('local-styles')
 
@@ -20,7 +23,7 @@
 
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="{{asset('dashboard/assets/js/admin/sidebar.js')}}"></script>
+
 
     @yield('local-scripts')
 

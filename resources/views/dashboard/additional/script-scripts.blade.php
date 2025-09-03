@@ -1,7 +1,3 @@
-@section('local-scripts-sidebar')
-    <script src="{{ asset('dashboard/assets/js/admin/sidebar.js') }}"></script>
-@endsection
-
 @section('local-scripts-home')
     <script src="{{ asset('dashboard/assets/js/admin/home.js') }}"></script>
 @endsection

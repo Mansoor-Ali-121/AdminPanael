@@ -2,6 +2,9 @@
 @include('dashboard.includes.menu')
 @include('dashboard.additional.style-links')
 @include('dashboard.additional.script-scripts')
+@section('local-scripts')
+    @yield('local-scripts-home')
+@endsection
 <!-- Layout Wrapper -->
 <div class="main-dashboard-content">
     @include('dashboard.includes.sidebar')
