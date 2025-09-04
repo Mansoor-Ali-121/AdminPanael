@@ -23,4 +23,9 @@ class BlogsModel extends Model
         'shedule_time',
         'status',
     ];
+
+    public function category()
+    {
+        return $this->belongsTo(BlogsCategories::class, 'category_id');
+    }
 }

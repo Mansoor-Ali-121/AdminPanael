@@ -2,7 +2,16 @@
 
 @section('dashboard-content')
     @include('dashboard.includes.alerts')
-
+    <header class="news-header py-3 my-3" style="background-color: #0d2d45; color: white;">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h1 style="font-weight: bold">Show <span style="color: #ff7b23f8">Blogs</span></h1>
+                    <p class="lead">Complete information about all blogs</p>
+                </div>
+            </div>
+        </div>
+    </header>
 
     <div class="btn-right">
         <a href="{{route('blog.add')}}" class="btn btn-primary">Add New Blog</a>
@@ -63,8 +72,8 @@
                                     </button>
                                     <div class="dropdown-menu">
                                         <a class="dropdown-item" href="{{ route('blog.view', $blog->blog_id) }}">View</a>
-                                        <a class="dropdown-item" href="">Edit</a>
-                                        <form action="" method="POST"
+                                        <a class="dropdown-item" href="{{ route('blog.edit', $blog->blog_id) }}">Edit</a>
+                                        <form action="{{ route('blog.delete', $blog->blog_id) }}" method="POST"
                                             onsubmit="return confirm('Are you sure?')">
                                             @csrf
                                             @method('DELETE')

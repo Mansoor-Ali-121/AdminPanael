@@ -1,17 +1,16 @@
 @extends('template')
 
 @section('dashboard-content')
-
-<header class="news-header" style="background-color: #0d2d45; color: white;">
-    <div class="container">
-        <div class="row">
-            <div class="col-12 text-center">
-                <h1 style="font-weight: bold">Blog <span style="color: #ff7b23f8">Details</span></h1>
-                <p class="lead">Complete information about this blog</p>
+    <header class="news-header" style="background-color: #0d2d45; color: white;">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h1 style="font-weight: bold">Blog <span style="color: #ff7b23f8">Details</span></h1>
+                    <p class="lead">Complete information about this blog</p>
+                </div>
             </div>
         </div>
-    </div>
-</header>
+    </header>
 
 
     <div class="container mt-4">
@@ -54,8 +53,8 @@
                                 <th>Scheduled For</th>
                                 <td>
                                     @if ($blog->shedule_date && $blog->shedule_time)
-                                        {{ \Carbon\Carbon::parse($blog->shedule_date)->format('jS M Y') }}
-                                        at {{ \Carbon\Carbon::parse($blog->shedule_time)->format('H:i') }}
+                                        {{ Carbon::parse($blog->shedule_date)->format('jS M Y') }}
+                                        at {{ Carbon::parse($blog->shedule_time)->format('H:i') }}
                                     @else
                                         Not Scheduled
                                     @endif
@@ -75,8 +74,7 @@
                                     @if ($blog->blog_image)
                                         <div class="news-image-container">
                                             <img src="{{ asset('blog_images/' . $blog->blog_image) }}"
-                                                alt="{{ $blog->image_alt_text ?? 'Blog Image' }}"
-                                                class="news-image">
+                                                alt="{{ $blog->image_alt_text ?? 'Blog Image' }}" class="news-image">
                                         </div>
                                         <div class="text-muted mt-2">
                                             <i class="fas fa-info-circle me-2"></i>File:
@@ -115,7 +113,7 @@
                     <div class="action-buttons mt-4">
                         <a href="{{ route('blog.show') }}">
                             <button type="button" class="btn btn-outline-secondary px-4">
-                                <i class="fas fa-times me-2"></i> Cancel
+                                <i class="fas fa-times me-2"></i> Back
                             </button>
                         </a>
                     </div>
@@ -123,7 +121,6 @@
             </div>
         </div>
     </div>
-
 @endsection
 
 <!-- Custom Styling -->

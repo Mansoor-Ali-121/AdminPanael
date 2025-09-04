@@ -116,21 +116,34 @@
     }
 </script>
 
-{{-- Slug --}}
+{{-- Blogs Slug --}}
+<script>
+    function generateBlogSlug() {
+        const input = document.getElementById('actual_slug').value;
+
+        const slug = input
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+            .replace(/\s+/g, '-') // Replace spaces with hyphens
+            .replace(/-+/g, '-'); // Replace multiple hyphens with a single one
+
+        document.getElementById('blog_slug').value = slug;
+    }
+</script>
+
+
+{{-- Categories Slug --}}
 <script>
     function generateSlug() {
-        const input = document.getElementById('blog_slug').value;
-
-        // Slug generate karna
+        const input = document.getElementById('actual_slug').value;
         let slug = input
             .toLowerCase()
             .trim()
-            .replace(/[^a-z0-9\s-]/g, '') // Special characters hatao
-            .replace(/\s+/g, '-') // Spaces ko hyphens mein convert karo
-            .replace(/-+/g, '-'); // Multiple hyphens ko single hyphen karo
-
-        // Slug ko preview field mein show karo
-        document.getElementById('actual_slug').value = slug;
+            .replace(/[^a-z0-9\s-]/g, '-') // Special characters ko hyphen se replace karo
+            .replace(/\s+/g, '-') // Spaces ko hyphen me badlo
+            .replace(/-+/g, '-'); // Multiple hyphens ko single hyphen banao
+        document.getElementById('category_slug').value = slug;
     }
 </script>
 

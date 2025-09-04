@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BlogsModel;
 use Illuminate\Http\Request;
+use App\Models\BlogsCategories;
 
 class BlogsController extends Controller
 {
@@ -12,7 +13,8 @@ class BlogsController extends Controller
      */
     public function index()
     {
-        return view('dashboard.Blogs.add');
+        $categories = BlogsCategories::all();
+        return view('dashboard.Blogs.add', compact('categories'));
     }
 
     /**
@@ -54,7 +56,7 @@ class BlogsController extends Controller
         }
 
         BlogsModel::create($ValidateData);
-        return redirect()->back()->with('success', 'Blog created successfully');
+        return redirect()->route('blog.show')->with('success', 'Blog created successfully');
     }
 
     /**
@@ -67,18 +69,18 @@ class BlogsController extends Controller
     }
 
     public function view($id)
-{
-    $blog = BlogsModel::findOrFail($id);  // model ka naam apne hisaab se change karo
-    return view('dashboard.Blogs.view', compact('blog'));
-}
+    {
+        $blog = BlogsModel::findOrFail($id);  // model ka naam apne hisaab se change karo
+        return view('dashboard.Blogs.view', compact('blog'));
+    }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit($id)
     {
-        $blogs = BlogsModel::findOrFail($id);
-        return view('dashboard.Blogs.edit', compact('blogs'));
+        $blog = BlogsModel::findOrFail($id);
+        return view('dashboard.Blogs.edit', compact('blog'));
     }
 
     /**
@@ -86,14 +88,63 @@ class BlogsController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $blog = BlogsModel::findOrFail($id);
+
+        $ValidateData = $request->validate([
+            'blog_title'         => 'required|string|max:255',
+            'blog_description'   => 'required|string',
+            'blog_slug' => 'required|string|unique:blogs_models,blog_slug,' . $blog->blog_id . ',blog_id',
+
+            'blog_content'       => 'required|string',
+            'blog_tags'          => 'nullable|string',
+            'blog_image'         => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
+            'image_alt_text'     => 'required|string',
+            'meta_title'         => 'required|string|max:255',
+            'meta_description'   => 'required|string',
+            'shedule_date'       => 'nullable|date',
+            'shedule_time'       => 'nullable',
+            'status'             => 'required|in:active,inactive',
+        ]);
+
+        // File upload (optional in edit)
+        if ($request->hasFile('blog_image')) {
+            // Delete old image if exists
+            $oldImage = public_path('blog_images/' . $blog->blog_image);
+            if (file_exists($oldImage)) {
+                unlink($oldImage);
+            }
+
+            $file = $request->file('blog_image');
+            $filename = time() . '.' . $file->getClientOriginalExtension();
+            $path = public_path('blog_images');
+            $file->move($path, $filename);
+            $ValidateData['blog_image'] = $filename;
+        } else {
+            // If no new image, keep the old one
+            $ValidateData['blog_image'] = $blog->blog_image;
+        }
+
+        // Update the blog
+        $blog->update($ValidateData);
+
+        return redirect()->route('blog.show')->with('success', 'Blog updated successfully.');
     }
+
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
     {
-        //
+        $blog = BlogsModel::findOrFail($id);
+
+        // Delete the image if exists
+        $imagePath = public_path('blog_images/' . $blog->blog_image);
+        if (file_exists($imagePath)) {
+            unlink($imagePath);
+        }
+        
+        $blog->delete();
+        return redirect()->route('blog.show')->with('success', 'Blog deleted successfully.');
     }
 }

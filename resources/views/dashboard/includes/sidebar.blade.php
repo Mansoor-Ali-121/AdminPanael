@@ -1,5 +1,7 @@
 @php
-    $segment = request()->segment(3); // will get 'add', 'show', etc.
+    $segment2 = request()->segment(2); // blogs, sitemap, robots etc.
+    $segment3 = request()->segment(3); // category, show, add etc.
+    $segment4 = request()->segment(4); // add, show etc. inside category
 @endphp
 
 <div class="sidebar">
@@ -11,31 +13,34 @@
 
                     <!-- Blogs -->
                     <div class="sidebar-group has-submenu">
-                        <span class="sidebar-link {{ in_array($segment, ['add', 'show', 'all-categories', 'add-category']) ? 'active' : '' }}">
+                        <span class="sidebar-link {{ ($segment2 === 'blogs') ? 'active' : '' }}">
                             Blogs <i class="fa-solid fa-arrow-down arrow-icon"></i>
                         </span>
-                        <div class="submenu {{ in_array($segment, ['add', 'show', 'all-categories', 'add-category']) ? 'active' : '' }}">
 
-                            <a href="{{ route('blog.show') }}" class="submenu-link {{ $segment == 'show' ? 'active' : '' }}">
+                        <div class="submenu {{ ($segment2 === 'blogs') ? 'active' : '' }}">
+
+                            <a href="{{ route('blog.show') }}"
+                               class="submenu-link {{ $segment3 === 'show' && $segment2 === 'blogs' ? 'active' : '' }}">
                                 View Blogs
                             </a>
 
-                            <a href="{{ route('blog.add') }}" class="submenu-link {{ $segment == 'add' ? 'active' : '' }}">
+                            <a href="{{ route('blog.add') }}"
+                               class="submenu-link {{ $segment3 === 'add' && $segment2 === 'blogs' ? 'active' : '' }}">
                                 Add New Blog
                             </a>
 
                             <!-- Blog Categories -->
                             <div class="submenu-item has-sub-submenu">
-                                <a href="#" class="submenu-link {{ in_array($segment, ['all-categories', 'add-category']) ? 'active' : '' }}">
+                                <a href="#" class="submenu-link {{ $segment3 === 'category' ? 'active' : '' }}">
                                     Blog Categories <i class="fa-solid fa-arrow-down arrow-icon"></i>
                                 </a>
-                                <div class="sub-submenu {{ in_array($segment, ['all-categories', 'add-category']) ? 'active' : '' }}">
-                                    <a href="{{ url('admin/all-categories') }}"
-                                       class="submenu-link {{ $segment == 'all-categories' ? 'active' : '' }}">
+                                <div class="sub-submenu {{ $segment3 === 'category' ? 'active' : '' }}">
+                                    <a href="{{ route('category.show') }}"
+                                       class="submenu-link {{ $segment4 === 'show' && $segment3 === 'category' ? 'active' : '' }}">
                                         View Categories
                                     </a>
-                                    <a href="{{ url('admin/add-category') }}"
-                                       class="submenu-link {{ $segment == 'add-category' ? 'active' : '' }}">
+                                    <a href="{{ route('category.add') }}"
+                                       class="submenu-link {{ $segment4 === 'add' && $segment3 === 'category' ? 'active' : '' }}">
                                         Add New Category
                                     </a>
                                 </div>
@@ -45,14 +50,16 @@
 
                     <!-- SEO Tools -->
                     <div class="sidebar-group has-submenu">
-                        <span class="sidebar-link {{ in_array($segment, ['sitemap', 'robots']) ? 'active' : '' }}">
+                        <span class="sidebar-link {{ in_array($segment2, ['sitemap', 'robots']) ? 'active' : '' }}">
                             SEO Tools <i class="fa-solid fa-arrow-down arrow-icon"></i>
                         </span>
-                        <div class="submenu {{ in_array($segment, ['sitemap', 'robots']) ? 'active' : '' }}">
-                            <a href="{{ url('admin/sitemap') }}" class="submenu-link {{ $segment == 'sitemap' ? 'active' : '' }}">
+                        <div class="submenu {{ in_array($segment2, ['sitemap', 'robots']) ? 'active' : '' }}">
+                            <a href="{{ url('admin/sitemap') }}"
+                               class="submenu-link {{ $segment2 === 'sitemap' ? 'active' : '' }}">
                                 Sitemap
                             </a>
-                            <a href="{{ url('admin/robots') }}" class="submenu-link {{ $segment == 'robots' ? 'active' : '' }}">
+                            <a href="{{ url('admin/robots') }}"
+                               class="submenu-link {{ $segment2 === 'robots' ? 'active' : '' }}">
                                 Robots
                             </a>
                         </div>
