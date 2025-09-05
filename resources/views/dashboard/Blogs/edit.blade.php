@@ -18,7 +18,7 @@
             </div>
         </div>
     </header>
-
+    @include('dashboard.includes.alertshandling')
     <form action="{{ route('blog.update', $blog->blog_id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PATCH')
@@ -100,7 +100,27 @@
                 <input type="text" id="blog_tags" name="blog_tags" class="form-control"
                     value="{{ old('blog_tags', $blog->blog_tags) }}">
             </fieldset>
+
+            @php
+                $selectedCategories = old('category_id') ?? $blog->categories->pluck('id')->toArray();
+            @endphp
+
+
+            @foreach ($categories as $category)
+                <div class="form-check">
+                    <input type="checkbox" @if (in_array($category->category_id, $blog_category_ids)) checked @endif
+                        id="category_{{ $category->category_id }}" name="category_id[]"
+                        value="{{ $category->category_id }}" class="form-check-input category-checkbox"
+                        {{ in_array($category->category_id, $selectedCategories) ? 'checked' : '' }}>
+                    <label class="form-check-label" for="category_{{ $category->category_id }}">
+                        {{ $category->category_name }}
+                    </label>
+                </div>
+            @endforeach
+
+
         </div>
+
 
         <h3>Set Schedule</h3>
         <div class="form-group">
@@ -127,5 +147,6 @@
         </div>
 
         <button type="submit" name="submit" class="btn btn-primary">Update Blog</button>
+        <a href="{{ route('blog.show') }}" class="btn btn-secondary">Back</a>
     </form>
 @endsection

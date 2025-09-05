@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class BlogsModel extends Model
 {
+    // public $timestamps = true; 
+
     protected $primaryKey = 'blog_id';
 
     protected $fillable = [
@@ -24,8 +26,9 @@ class BlogsModel extends Model
         'status',
     ];
 
-    public function category()
+    public function categories()
     {
-        return $this->belongsTo(BlogsCategories::class, 'category_id');
+        return $this->belongsToMany(BlogsCategories::class, 'cat_links', 'blog_id', 'category_id')->withPivot('status')
+            ->withTimestamps(); 
     }
 }

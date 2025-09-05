@@ -1,13 +1,11 @@
 @extends('template')
-
+@include('dashboard.additional.style-links')
+@include('dashboard.additional.script-scripts')
 
 @section('local-scripts')
-  @yield('local-scripts-addBlog')
-  <link rel="stylesheet" href="{{ asset('zzzz') }}">
+    @yield('local-scripts-addBlog')
 @endsection
-@section('local-styles')
-  <link rel="stylesheet" href="{{ asset('zzzz') }}">
-@endsection
+
 @section('dashboard-content')
     @include('dashboard.includes.alerts')
 
@@ -21,6 +19,17 @@
             </div>
         </div>
     </header>
+
+    {{-- Error Messages --}}
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
 
     <form action="{{ route('blog.add') }}" method="POST" enctype="multipart/form-data">
@@ -52,7 +61,11 @@
 
             <fieldset class="form-group">
                 <label for="blog_image"><sup>*</sup>Select Main Image:</label>
-                <input required type="file" name="blog_image" id="blog_image" onchange="previewMainImage(event)">
+                <div class="image-upload-row" style="display: flex; align-items: center;">
+                    <img id="mainImagePreview" src="#" alt="Image Preview" />
+                    <input class="form-group" required type="file" name="blog_image" id="blog_image"
+                        onchange="previewMainImage(event)">
+                </div>
                 @error('blog_image')
                     <small class="text-danger">{{ $message }}</small>
                 @enderror
@@ -125,22 +138,30 @@
                     <small class="text-danger">{{ $message }}</small>
                 @enderror
             </fieldset>
+
+            {{-- Categories --}}
             <fieldset class="form-group">
                 <legend>Categories:</legend>
+                @php
+                    $selectedCategories = old('category_id', []);
+                @endphp
+
                 @foreach ($categories as $category)
                     <div class="form-check">
-                        <input type="checkbox" id="category_{{ $category->category_id }}" name="category_id"
+                        <input type="checkbox" id="category_{{ $category->category_id }}" name="category_id[]"
                             value="{{ $category->category_id }}" class="form-check-input category-checkbox"
-                            {{ old('category_id') == $category->category_id ? 'checked' : '' }}>
+                            {{ in_array($category->category_id, $selectedCategories) ? 'checked' : '' }}>
                         <label class="form-check-label" for="category_{{ $category->category_id }}">
                             {{ $category->category_name }}
                         </label>
                     </div>
                 @endforeach
+
                 @error('category_id')
                     <small class="text-danger">{{ $message }}</small>
                 @enderror
             </fieldset>
+
 
 
         </div>
@@ -181,14 +202,13 @@
 
 
         <button type="submit" name="submit" class="btn btn-primary">Submit</button>
+        <a href="{{ route('blog.show') }}" class="btn btn-secondary">Back</a>
     </form>
 
     {{-- Blogs Slug --}}
-<script>
-    function generateSlug() {
-console.log('jjj');
-    }
-</script>
+    <script>
+        function generateSlug() {
+            console.log('jjj');
+        }
+    </script>
 @endsection
-
-

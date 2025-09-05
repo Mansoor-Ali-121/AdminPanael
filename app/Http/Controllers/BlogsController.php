@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\BlogsModel;
 use Illuminate\Http\Request;
 use App\Models\BlogsCategories;
+use App\Models\CatLinksModel;
+use Carbon\Carbon;
+
 
 class BlogsController extends Controller
 {
@@ -28,16 +31,16 @@ class BlogsController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+
     public function store(Request $request)
     {
         $ValidateData = $request->validate([
-
             'blog_title'         => 'required|string|max:255',
             'blog_description'   => 'required|string',
             'blog_slug'          => 'required|string|unique:blogs_models,blog_slug',
             'blog_content'       => 'required|string',
-            'blog_tags'          => 'required|string',
-            'blog_image' => 'required|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
+            'blog_tags'          => 'nullable|string',
+            'blog_image'         => 'required|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
             'image_alt_text'     => 'required|string',
             'meta_title'         => 'required|string|max:255',
             'meta_description'   => 'required|string',
@@ -46,7 +49,6 @@ class BlogsController extends Controller
             'status'             => 'required|in:active,inactive',
         ]);
 
-        // Upload file 
         if ($request->hasFile('blog_image')) {
             $file = $request->file('blog_image');
             $filename = time() . '.' . $file->getClientOriginalExtension();
@@ -55,7 +57,25 @@ class BlogsController extends Controller
             $ValidateData['blog_image'] = $filename;
         }
 
-        BlogsModel::create($ValidateData);
+        $blog = BlogsModel::create($ValidateData);
+
+        $category_ids = $request->validate([
+            'category_id' => 'array',
+        ]);
+
+        $ValidateData_2 = $request->validate([
+            'status' => 'in:active,inactive',
+        ]);
+
+        if (isset($category_ids['category_id'])) {
+            foreach ($category_ids['category_id'] as $category_id) {
+                CatLinksModel::updateOrCreate(
+                    ['blog_id' => $blog->blog_id, 'category_id' => $category_id],
+                    $ValidateData_2
+                );
+            }
+        }
+
         return redirect()->route('blog.show')->with('success', 'Blog created successfully');
     }
 
@@ -79,8 +99,11 @@ class BlogsController extends Controller
      */
     public function edit($id)
     {
-        $blog = BlogsModel::findOrFail($id);
-        return view('dashboard.Blogs.edit', compact('blog'));
+        $blog = BlogsModel::with('categories')->findOrFail($id);
+        $blog_category_ids = CatLinksModel::where('blog_id', $id)->pluck('category_id')->toArray();
+        $categories = BlogsCategories::all();
+
+        return view('dashboard.Blogs.edit', compact('blog', 'categories', 'blog_category_ids'));
     }
 
     /**
@@ -124,9 +147,22 @@ class BlogsController extends Controller
             $ValidateData['blog_image'] = $blog->blog_image;
         }
 
-        // Update the blog
+        // Update blog data
         $blog->update($ValidateData);
+        $category_ids = $request->validate([
+            'category_id' => 'array',
+        ]);
+        $selectedCategoryIDs = $category_ids['category_id'] ?? [];
+        $pivotData = [
+            // 'updated_at' => now(),
+            'status' => $request->input('status', 'inactive'),
+        ];
+        $syncData = collect($selectedCategoryIDs)->mapWithKeys(function ($id) use ($pivotData) {
+            return [$id => $pivotData];
+        })->toArray();
 
+        // Sync categories with extra pivot data
+        $blog->categories()->sync($syncData);
         return redirect()->route('blog.show')->with('success', 'Blog updated successfully.');
     }
 
@@ -143,7 +179,7 @@ class BlogsController extends Controller
         if (file_exists($imagePath)) {
             unlink($imagePath);
         }
-        
+
         $blog->delete();
         return redirect()->route('blog.show')->with('success', 'Blog deleted successfully.');
     }

@@ -1,5 +1,3 @@
-@include('dashboard.additional.style-links')
-@include('dashboard.additional.script-scripts')
 @include('dashboard.includes.header')
 @include('dashboard.includes.menu')
 
