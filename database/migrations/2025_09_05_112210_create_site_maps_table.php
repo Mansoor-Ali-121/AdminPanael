@@ -12,14 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('site_maps', function (Blueprint $table) {
-            $table->id();
+            $table->id('sitemap_id');
             $table->string('url');
             $table->string('canonical');
             $table->float('priority')->default(0.5);
             $table->text('schema')->nullable();
             $table->text('meta_title')->nullable();
             $table->text('meta_description')->nullable();
-            $table->string('status')->default('inactive');
+            $table->string('status')->default('active');
             $table->longText('pagecontent')->nullable();
             $table->timestamps();
         });

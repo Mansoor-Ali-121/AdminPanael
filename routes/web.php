@@ -3,6 +3,8 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BlogsController;
 use App\Http\Controllers\CategoriesController;
+use App\Http\Controllers\RobotsController;
+use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [AdminController::class, 'index'])->name('admin.home');
@@ -26,4 +28,21 @@ Route::prefix('admin')->group(function () {
     Route::patch('/blogs/category/update/{id}', [CategoriesController::class, 'update'])->name('category.update');
     Route::delete('/blogs/category/delete/{id}', [CategoriesController::class, 'destroy'])->name('category.delete');
     
+
+    // Site map 
+    Route::get('/add_url', [SitemapController::class, 'index'])->name('sitemap.add');
+    Route::post('/add_url', [SitemapController::class, 'store']);
+    Route::get('/sitemap', [SitemapController::class, 'show'])->name('sitemap.show');
+    Route::get('/edit_url/{id}', [SitemapController::class, 'edit'])->name('sitemap.edit');
+    Route::patch('/update_url/{id}', [SitemapController::class, 'update'])->name('sitemap.update');
+    Route::delete('/delete_url/{id}', [SitemapController::class, 'destroy'])->name('sitemap.delete');
+
+    // Robots routes
+    Route::get('/add_robots', [RobotsController::class, 'index'])->name('robots.add');
+    Route::post('/add_robots', [RobotsController::class, 'store']);
+    Route::get('/robots', [RobotsController::class, 'show'])->name('robots.show');
+    Route::get('/edit_robots/{id}', [RobotsController::class, 'edit'])->name('robots.edit');
+    Route::patch('/update_robots/{id}', [RobotsController::class, 'update'])->name('robots.update');
+    Route::delete('/delete_robots/{id}', [RobotsController::class, 'destroy'])->name('robots.delete');
+
 });

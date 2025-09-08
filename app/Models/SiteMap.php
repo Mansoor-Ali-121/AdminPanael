@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class SiteMap extends Model
 {
+    protected $primaryKey = 'sitemap_id';
+
     protected $fillable = [
 
         'url',
@@ -16,6 +18,13 @@ class SiteMap extends Model
         'meta_description',
         'status',
         'pagecontent'
-        
+
     ];
+
+// SiteMap.php model
+public function alternates()
+{
+    return $this->hasMany(AlternatePageModel::class, 'sitemap_id', 'sitemap_id');
+}
+
 }
