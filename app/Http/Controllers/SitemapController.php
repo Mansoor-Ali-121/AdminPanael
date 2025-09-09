@@ -32,14 +32,13 @@ class SitemapController extends Controller
         // Step 1: Validate input
         $validatedData = $request->validate([
             'url' => 'required|string|max:255',
-            'canonical' => 'required|string|max:255',
+            'canonical' => 'nullable|string|max:255',
             'priority' => 'numeric|min:0|max:1',
-            'schema' => 'required|string',
-            'meta_title' => 'required|string|max:255',
-            'meta_description' => 'required|string|max:255',
+            'schema' => 'nullable|string',
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string|max:255',
             'status' => 'in:active,inactive', // Adjust if needed
-            'pagecontent' => 'required|string',
-
+            'pagecontent' => 'nullable|string',
             // Alternate pages validation
             'alternate.*.hreflang' => 'nullable|string|max:10',
             'alternate.*.href' => 'nullable|string|max:255',

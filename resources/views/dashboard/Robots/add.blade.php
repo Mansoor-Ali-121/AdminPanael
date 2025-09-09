@@ -1,6 +1,12 @@
 @extends('template')
 @section('dashboard-content')
 
+@include('dashboard.additional.script-scripts')
+
+@section('local-scripts')
+    @yield('local-scripts-addBlog')
+@endsection
+
     @include('dashboard.includes.alerts')
 
     {{-- Error Messages --}}

@@ -100,11 +100,12 @@
                 <input type="text" id="blog_tags" name="blog_tags" class="form-control"
                     value="{{ old('blog_tags', $blog->blog_tags) }}">
             </fieldset>
+<fieldset class="form-group">
+        <h4>Categories</h4>
 
             @php
                 $selectedCategories = old('category_id') ?? $blog->categories->pluck('id')->toArray();
             @endphp
-
 
             @foreach ($categories as $category)
                 <div class="form-check">
@@ -117,6 +118,7 @@
                     </label>
                 </div>
             @endforeach
+</fieldset>
 
 
         </div>
@@ -134,7 +136,7 @@
             <label for="draft">Draft</label>
         </div>
 
-        <div id="dateTimeFields" class="{{ old('status', $blog->status) == 'active' ? '' : 'hidden' }}">
+        <div id="dateTimeFields" class="{{ old('status', $blog->status) == 'inactive' ? '' : 'hidden' }}">
             <label for="shedule_date">Schedule Date:</label>
             <input type="date" id="shedule_date" name="shedule_date" class="form-control"
                 value="{{ old('shedule_date', $blog->shedule_date) }}">
