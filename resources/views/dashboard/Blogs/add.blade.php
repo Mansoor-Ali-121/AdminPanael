@@ -182,7 +182,8 @@
             @enderror
         </div>
 
-        <div id="dateTimeFields" class="{{ old('status') == 'active' ? '' : 'hidden' }}">
+        <div id="dateTimeFields" class="{{ old('status', 'active') == 'inactive' ? '' : 'hidden' }}">
+
             <label for="shedule_date">Schedule Date:</label>
             <input type="date" id="shedule_date" name="shedule_date" class="form-control"
                 value="{{ old('shedule_date') }}">

@@ -100,25 +100,25 @@
                 <input type="text" id="blog_tags" name="blog_tags" class="form-control"
                     value="{{ old('blog_tags', $blog->blog_tags) }}">
             </fieldset>
-<fieldset class="form-group">
-        <h4>Categories</h4>
+            <fieldset class="form-group">
+                <h4>Categories</h4>
 
-            @php
-                $selectedCategories = old('category_id') ?? $blog->categories->pluck('id')->toArray();
-            @endphp
+                @php
+                    $selectedCategories = old('category_id') ?? $blog->categories->pluck('id')->toArray();
+                @endphp
 
-            @foreach ($categories as $category)
-                <div class="form-check">
-                    <input type="checkbox" @if (in_array($category->category_id, $blog_category_ids)) checked @endif
-                        id="category_{{ $category->category_id }}" name="category_id[]"
-                        value="{{ $category->category_id }}" class="form-check-input category-checkbox"
-                        {{ in_array($category->category_id, $selectedCategories) ? 'checked' : '' }}>
-                    <label class="form-check-label" for="category_{{ $category->category_id }}">
-                        {{ $category->category_name }}
-                    </label>
-                </div>
-            @endforeach
-</fieldset>
+                @foreach ($categories as $category)
+                    <div class="form-check">
+                        <input type="checkbox" @if (in_array($category->category_id, $blog_category_ids)) checked @endif
+                            id="category_{{ $category->category_id }}" name="category_id[]"
+                            value="{{ $category->category_id }}" class="form-check-input category-checkbox"
+                            {{ in_array($category->category_id, $selectedCategories) ? 'checked' : '' }}>
+                        <label class="form-check-label" for="category_{{ $category->category_id }}">
+                            {{ $category->category_name }}
+                        </label>
+                    </div>
+                @endforeach
+            </fieldset>
 
 
         </div>

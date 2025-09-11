@@ -36,6 +36,26 @@
         @enderror
     </div>
 
+    {{-- Actual URL (readonly field) --}}
+    <div class="form-group">
+        <label for="actual_url">Actual Url:</label>
+        <input class="form-control" type="text" name="actual_url" id="actual_url" readonly
+            placeholder="This url will be sent for google Indexing" value="{{ old('actual_url') }}">
+        @error('actual_url')
+            <small class="text-danger">{{ $message }}</small>
+        @enderror
+    </div>
+
+    {{-- Priority: --}}
+    <div class="form-group">
+        <label for="priority">Priority:</label>
+        <input type="number" id="priority" name="priority" class="form-control" min="0"
+            step="0.1" value="{{ old('priority', '0.5') }}">
+        @error('priority')
+            <small class="text-danger">{{ $message }}</small>
+        @enderror
+    </div>
+
     {{-- Canonical Field --}}
     <div class="form-group">
         <label for="canonical">Canonical:</label>
@@ -45,15 +65,7 @@
         @enderror
     </div>
 
-    {{-- Actual URL (readonly field, auto generate hota hai) --}}
-    <div class="form-group">
-        <label for="actual_url">Actual Url:</label>
-        <input class="form-control" type="text" name="actual_url" id="actual_url" readonly
-            placeholder="This url will be sent for google Indexing" value="{{ old('actual_url') }}">
-        @error('actual_url')
-            <small class="text-danger">{{ $message }}</small>
-        @enderror
-    </div>
+
 
     {{-- Meta Title --}}
     <div class="form-group">

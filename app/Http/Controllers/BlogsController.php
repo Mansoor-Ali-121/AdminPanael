@@ -32,52 +32,55 @@ class BlogsController extends Controller
      * Store a newly created resource in storage.
      */
 
-    public function store(Request $request)
-    {
-        $ValidateData = $request->validate([
-            'blog_title'         => 'required|string|max:255',
-            'blog_description'   => 'required|string',
-            'blog_slug'          => 'required|string|unique:blogs_models,blog_slug',
-            'blog_content'       => 'required|string',
-            'blog_tags'          => 'nullable|string',
-            'blog_image'         => 'required|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
-            'image_alt_text'     => 'required|string',
-            'meta_title'         => 'required|string|max:255',
-            'meta_description'   => 'required|string',
-            'shedule_date'       => 'nullable|date',
-            'shedule_time'       => 'nullable',
-            'status'             => 'required|in:active,inactive',
-        ]);
+public function store(Request $request)
+{
+    $ValidateData = $request->validate([
+        'blog_title'         => 'required|string|max:255',
+        'blog_description'   => 'required|string',
+        'blog_slug'          => 'required|string|unique:blogs_models,blog_slug',
+        'blog_content'       => 'required|string',
+        'blog_tags'          => 'nullable|string',
+        'blog_image'         => 'required|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
+        'image_alt_text'     => 'required|string',
+        'meta_title'         => 'required|string|max:255',
+        'meta_description'   => 'required|string',
+        'shedule_date'       => 'nullable|date',
+        'shedule_time'       => 'nullable',
+        'status'             => 'required|in:active,inactive',
+    ]);
 
-        if ($request->hasFile('blog_image')) {
-            $file = $request->file('blog_image');
-            $filename = time() . '.' . $file->getClientOriginalExtension();
-            $path = public_path('blog_images');
-            $file->move($path, $filename);
-            $ValidateData['blog_image'] = $filename;
-        }
-
-        $blog = BlogsModel::create($ValidateData);
-
-        $category_ids = $request->validate([
-            'category_id' => 'array',
-        ]);
-
-        $ValidateData_2 = $request->validate([
-            'status' => 'in:active,inactive',
-        ]);
-
-        if (isset($category_ids['category_id'])) {
-            foreach ($category_ids['category_id'] as $category_id) {
-                CatLinksModel::updateOrCreate(
-                    ['blog_id' => $blog->blog_id, 'category_id' => $category_id],
-                    $ValidateData_2
-                );
-            }
-        }
-
-        return redirect()->route('blog.show')->with('success', 'Blog created successfully');
+    if ($request->hasFile('blog_image')) {
+        $file = $request->file('blog_image');
+        $filename = time() . '.' . $file->getClientOriginalExtension();
+        $path = public_path('blog_images');
+        $file->move($path, $filename);
+        $ValidateData['blog_image'] = $filename;
     }
+
+    $blog = BlogsModel::create($ValidateData);
+
+    // Validate category_id array if any
+    $category_ids = $request->validate([
+        'category_id' => 'array',
+    ]);
+
+    $ValidateData_2 = $request->validate([
+        'status' => 'in:active,inactive',
+    ]);
+
+    // Insert only if categories are selected (non-empty array)
+    if (!empty($category_ids['category_id'])) {
+        foreach ($category_ids['category_id'] as $category_id) {
+            CatLinksModel::updateOrCreate(
+                ['blog_id' => $blog->blog_id, 'category_id' => $category_id],
+                $ValidateData_2
+            );
+        }
+    }
+
+    return redirect()->route('blog.show')->with('success', 'Blog created successfully');
+}
+
 
     /**
      * Display the specified resource.
@@ -109,62 +112,66 @@ class BlogsController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
-    {
-        $blog = BlogsModel::findOrFail($id);
+  public function update(Request $request, string $id)
+{
+    $blog = BlogsModel::findOrFail($id);
 
-        $ValidateData = $request->validate([
-            'blog_title'         => 'required|string|max:255',
-            'blog_description'   => 'required|string',
-            'blog_slug' => 'required|string|unique:blogs_models,blog_slug,' . $blog->blog_id . ',blog_id',
+    $ValidateData = $request->validate([
+        'blog_title'         => 'required|string|max:255',
+        'blog_description'   => 'required|string',
+        'blog_slug' => 'required|string|unique:blogs_models,blog_slug,' . $blog->blog_id . ',blog_id',
+        'blog_content'       => 'required|string',
+        'blog_tags'          => 'nullable|string',
+        'blog_image'         => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
+        'image_alt_text'     => 'required|string',
+        'meta_title'         => 'required|string|max:255',
+        'meta_description'   => 'required|string',
+        'shedule_date'       => 'nullable|date',
+        'shedule_time'       => 'nullable',
+        'status'             => 'required|in:active,inactive',
+    ]);
 
-            'blog_content'       => 'required|string',
-            'blog_tags'          => 'nullable|string',
-            'blog_image'         => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
-            'image_alt_text'     => 'required|string',
-            'meta_title'         => 'required|string|max:255',
-            'meta_description'   => 'required|string',
-            'shedule_date'       => 'nullable|date',
-            'shedule_time'       => 'nullable',
-            'status'             => 'required|in:active,inactive',
-        ]);
-
-        // File upload (optional in edit)
-        if ($request->hasFile('blog_image')) {
-            // Delete old image if exists
-            $oldImage = public_path('blog_images/' . $blog->blog_image);
-            if (file_exists($oldImage)) {
-                unlink($oldImage);
-            }
-
-            $file = $request->file('blog_image');
-            $filename = time() . '.' . $file->getClientOriginalExtension();
-            $path = public_path('blog_images');
-            $file->move($path, $filename);
-            $ValidateData['blog_image'] = $filename;
-        } else {
-            // If no new image, keep the old one
-            $ValidateData['blog_image'] = $blog->blog_image;
+    // Handle file upload (optional in edit)
+    if ($request->hasFile('blog_image')) {
+        // Delete old image if exists
+        $oldImage = public_path('blog_images/' . $blog->blog_image);
+        if ($blog->blog_image && file_exists($oldImage)) {
+            unlink($oldImage);
         }
 
-        // Update blog data
-        $blog->update($ValidateData);
-        $category_ids = $request->validate([
-            'category_id' => 'array',
-        ]);
-        $selectedCategoryIDs = $category_ids['category_id'] ?? [];
-        $pivotData = [
-            // 'updated_at' => now(),
-            'status' => $request->input('status', 'inactive'),
-        ];
-        $syncData = collect($selectedCategoryIDs)->mapWithKeys(function ($id) use ($pivotData) {
-            return [$id => $pivotData];
-        })->toArray();
-
-        // Sync categories with extra pivot data
-        $blog->categories()->sync($syncData);
-        return redirect()->route('blog.show')->with('success', 'Blog updated successfully.');
+        $file = $request->file('blog_image');
+        $filename = time() . '.' . $file->getClientOriginalExtension();
+        $file->move(public_path('blog_images'), $filename);
+        $ValidateData['blog_image'] = $filename;
+    } else {
+        // Agar image update nahi karni, purani image rakhein
+        $ValidateData['blog_image'] = $blog->blog_image;
     }
+
+    // Update blog data
+    $blog->update($ValidateData);
+
+    // Validate category IDs - agar nahi diye gaye to empty array set karo
+    $category_ids = $request->validate([
+        'category_id' => 'array',
+    ]);
+    $selectedCategoryIDs = $category_ids['category_id'] ?? [];
+
+    $pivotData = [
+        'status' => $request->input('status', 'inactive'),  // extra pivot field agar aap use kar rahe hain
+    ];
+
+    // Sync categories with extra pivot data
+    // Agar koi category select nahi, to sync empty array kar dega, jisse purani links delete ho jayengi
+    $syncData = collect($selectedCategoryIDs)->mapWithKeys(function ($id) use ($pivotData) {
+        return [$id => $pivotData];
+    })->toArray();
+
+    $blog->categories()->sync($syncData);
+
+    return redirect()->route('blog.show')->with('success', 'Blog updated successfully.');
+}
+
 
 
     /**

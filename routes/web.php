@@ -1,10 +1,12 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BlogsController;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\RobotsController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\UserRegisterController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [AdminController::class, 'index'])->name('admin.home');
@@ -36,6 +38,8 @@ Route::prefix('admin')->group(function () {
     Route::get('/edit_url/{id}', [SitemapController::class, 'edit'])->name('sitemap.edit');
     Route::patch('/update_url/{id}', [SitemapController::class, 'update'])->name('sitemap.update');
     Route::delete('/delete_url/{id}', [SitemapController::class, 'destroy'])->name('sitemap.delete');
+    Route::delete('/delete_alternate/{id}', [SiteMapController::class, 'deleteAlternate'])->name('alternate.delete');
+
 
     // Robots routes
     Route::get('/add_robots', [RobotsController::class, 'index'])->name('robots.add');
@@ -44,5 +48,18 @@ Route::prefix('admin')->group(function () {
     Route::get('/edit_robots/{id}', [RobotsController::class, 'edit'])->name('robots.edit');
     Route::patch('/update_robots/{id}', [RobotsController::class, 'update'])->name('robots.update');
     Route::delete('/delete_robots/{id}', [RobotsController::class, 'destroy'])->name('robots.delete');
+
+    // User Routes 
+    Route::get('/users_add', [UserRegisterController::class, 'index'])->name('user.add');
+    Route::post('/users_add', [UserRegisterController::class, 'store']);
+    Route::get('/users_show', [UserRegisterController::class, 'show'])->name('user.show');
+    Route::get('/users/edit/{id}', [UserRegisterController::class, 'edit'])->name('user.edit');
+    Route::patch('/users/update/{id}', [UserRegisterController::class, 'update'])->name('user.update');
+    Route::delete('/users/delete/{id}', [UserRegisterController::class, 'destroy'])->name('user.delete');
+
+    // Auth routes 
+    Route::get('/login', [AuthController::class, 'index'])->name('user.login');
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::get('/logout', [AuthController::class, 'logout'])->name('user.logout');
 
 });

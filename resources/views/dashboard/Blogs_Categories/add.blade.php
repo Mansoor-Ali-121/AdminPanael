@@ -34,22 +34,6 @@
                 @enderror
             </fieldset>
 
-            <fieldset class="form-group">
-                <label for="category_status"><sup>*</sup>Category Status:</label>
-                <select id="category_status" name="category_status" class="form-control" required>
-                    <option value="">-- Select Status --</option>
-                    <option value="active" {{ old('category_status') == 'active' ? 'selected' : '' }}>Active</option>
-                    <option value="inactive" {{ old('category_status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
-                </select>
-                @error('category_status')
-                    <small class="text-danger">{{ $message }}</small>
-                @enderror
-            </fieldset>
-
-        </section>
-
-        <h4>SEO Details</h4>
-        <section class="card p-3 mb-3 card-border">
             {{-- Custom Slug --}}
             <fieldset class="form-group">
                 <label for="actual_slug"><sup>*</sup>Category Slug (No Special Characters):</label>
@@ -65,6 +49,24 @@
                 <label for="category_slug">Slug Preview:</label>
                 <input class="form-control" type="text" name="category_slug" id="category_slug"
                     value="{{ old('category_slug') }}" readonly>
+            </fieldset>
+
+        </section>
+
+        <h4>SEO Details</h4>
+        <section class="card p-3 mb-3 card-border">
+
+
+            <fieldset class="form-group">
+                <label for="category_status"><sup>*</sup>Category Status:</label>
+                <select id="category_status" name="category_status" class="form-control" required>
+                    <option value="">-- Select Status --</option>
+                    <option value="active" {{ old('category_status') == 'active' ? 'selected' : '' }}>Active</option>
+                    <option value="inactive" {{ old('category_status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                </select>
+                @error('category_status')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
             </fieldset>
         </section>
 

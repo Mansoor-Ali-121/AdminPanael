@@ -1,7 +1,7 @@
 @extends('template')
 
 @section('dashboard-content')
-@include('dashboard.includes.alerts')
+    @include('dashboard.includes.alerts')
     <script>
         $(document).ready(function() {
             $('.toggle-btn').on('click', function() {
@@ -23,6 +23,7 @@
             <tr>
                 <th style="width: 20%;">URL</th>
                 <th style="width: 20%;">Canonical</th>
+                <th style="width: 20%;">Priority</th>
                 <th style="width: 20%;">Schema</th>
                 <th style="width: 30%;">Content</th>
                 <th style="width: 10%;">Operation</th>
@@ -32,12 +33,19 @@
             @foreach ($urls as $url)
                 <tr>
                     <td style="word-break: break-word;">{{ $url->url }}</td>
-                    <td style="word-break: break-word;">{{ $url->canonical }}</td>
+                    <td style="word-break: break-word;">{{ $url->canonical ?? 'N/A' }}</td>
+
+                          {{-- Priority --}}
+                    <td>
+                        <div class="line-clamp">
+                            {{ $url->priority }}
+                        </div>
+                    </td>
 
                     {{-- Schema Field --}}
                     <td>
                         <div class="line-clamp" id="schema-{{ $url->id }}">
-                            {{ $url->schema }}
+                            {{ $url->schema ?? 'N/A' }}
                         </div>
                         @if (!empty($url->schema) && trim($url->schema) !== '')
                             <button class="btn btn-link p-0 toggle-btn" data-target="schema-{{ $url->id }}">Show
@@ -48,7 +56,7 @@
                     {{-- Page Content Field --}}
                     <td>
                         <div class="line-clamp" id="content-{{ $url->id }}">
-                            {{ $url->pagecontent }}
+                            {{ $url->pagecontent ?? 'N/A' }}
                         </div>
                         @if (!empty($url->pagecontent) && trim($url->pagecontent) !== '')
                             <button class="btn btn-link p-0 toggle-btn" data-target="content-{{ $url->id }}">Show
@@ -57,8 +65,9 @@
                     </td>
 
                     <td>
-                        <a href="{{ route('sitemap.edit',  $url->sitemap_id) }}" class="btn btn-secondary btn-sm">Edit</a>
-                        <form action="{{ route('sitemap.delete', $url->sitemap_id) }}" method="POST" onsubmit="return confirm('Are you sure?')">
+                        <a href="{{ route('sitemap.edit', $url->sitemap_id) }}" class="btn btn-secondary btn-sm">Edit</a>
+                        <form action="{{ route('sitemap.delete', $url->sitemap_id) }}" method="POST"
+                            onsubmit="return confirm('Are you sure?')">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-secondary btn-sm">Delete</button>
