@@ -12,13 +12,14 @@
 
                     <!-- Blogs -->
                     <div class="sidebar-group has-submenu">
-                        <span class="sidebar-link {{ $segment2 === 'blogs' ? 'active' : '' }}">
+                        <span
+                            class="sidebar-link {{ $segment2 === 'blogs' || $segment2 === 'index' ? 'active' : '' }}">
                             Blogs <i class="fa-solid fa-arrow-down arrow-icon"></i>
                         </span>
 
-                        <div class="submenu {{ $segment2 === 'blogs' ? 'active' : '' }}">
+                        <div class="submenu {{ $segment2 === 'blogs' || $segment2 === 'index' ? 'active' : '' }}">
                             <a href="{{ route('blog.show') }}"
-                                class="submenu-link {{ $segment3 === 'show' && $segment2 === 'blogs' ? 'active' : '' }}">
+                                class="submenu-link {{ ($segment3 === 'show' && $segment2 === 'blogs') || $segment2 === 'index' ? 'active' : '' }}">
                                 View Blogs
                             </a>
 
@@ -45,6 +46,7 @@
                             </div>
                         </div>
                     </div>
+
 
                     <!-- Admin Panel Users -->
                     <div class="sidebar-group has-submenu">

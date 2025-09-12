@@ -32,54 +32,56 @@ class BlogsController extends Controller
      * Store a newly created resource in storage.
      */
 
-public function store(Request $request)
-{
-    $ValidateData = $request->validate([
-        'blog_title'         => 'required|string|max:255',
-        'blog_description'   => 'required|string',
-        'blog_slug'          => 'required|string|unique:blogs_models,blog_slug',
-        'blog_content'       => 'required|string',
-        'blog_tags'          => 'nullable|string',
-        'blog_image'         => 'required|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
-        'image_alt_text'     => 'required|string',
-        'meta_title'         => 'required|string|max:255',
-        'meta_description'   => 'required|string',
-        'shedule_date'       => 'nullable|date',
-        'shedule_time'       => 'nullable',
-        'status'             => 'required|in:active,inactive',
-    ]);
+    public function store(Request $request)
+    {
+        $ValidateData = $request->validate([
+            'blog_title'         => 'required|string|max:255',
+            'blog_description'   => 'required|string',
+            'blog_slug'          => 'required|string|unique:blogs_models,blog_slug',
+            'blog_content'       => 'required|string',
+            'blog_tags'          => 'nullable|string',
+            'blog_image'         => 'required|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
+            'image_alt_text'     => 'required|string',
+            'meta_title'         => 'required|string|max:255',
+            'meta_description'   => 'required|string',
+            // 'shedule_date'       => 'required|date_format:Y-m-d',
+            // 'shedule_time'       => 'required|date_format:H:i',
+            'status'             => 'required|in:active,inactive',
+            'shedule_date' => $request->status === 'inactive' ? 'required|date' : 'nullable|date',
+            'shedule_time' => $request->status === 'inactive' ? 'required' : 'nullable',
+        ]);
 
-    if ($request->hasFile('blog_image')) {
-        $file = $request->file('blog_image');
-        $filename = time() . '.' . $file->getClientOriginalExtension();
-        $path = public_path('blog_images');
-        $file->move($path, $filename);
-        $ValidateData['blog_image'] = $filename;
-    }
-
-    $blog = BlogsModel::create($ValidateData);
-
-    // Validate category_id array if any
-    $category_ids = $request->validate([
-        'category_id' => 'array',
-    ]);
-
-    $ValidateData_2 = $request->validate([
-        'status' => 'in:active,inactive',
-    ]);
-
-    // Insert only if categories are selected (non-empty array)
-    if (!empty($category_ids['category_id'])) {
-        foreach ($category_ids['category_id'] as $category_id) {
-            CatLinksModel::updateOrCreate(
-                ['blog_id' => $blog->blog_id, 'category_id' => $category_id],
-                $ValidateData_2
-            );
+        if ($request->hasFile('blog_image')) {
+            $file = $request->file('blog_image');
+            $filename = time() . '.' . $file->getClientOriginalExtension();
+            $path = public_path('blog_images');
+            $file->move($path, $filename);
+            $ValidateData['blog_image'] = $filename;
         }
-    }
 
-    return redirect()->route('blog.show')->with('success', 'Blog created successfully');
-}
+        $blog = BlogsModel::create($ValidateData);
+
+        // Validate category_id array if any
+        $category_ids = $request->validate([
+            'category_id' => 'array',
+        ]);
+
+        $ValidateData_2 = $request->validate([
+            'status' => 'in:active,inactive',
+        ]);
+
+        // Insert only if categories are selected (non-empty array)
+        if (!empty($category_ids['category_id'])) {
+            foreach ($category_ids['category_id'] as $category_id) {
+                CatLinksModel::updateOrCreate(
+                    ['blog_id' => $blog->blog_id, 'category_id' => $category_id],
+                    $ValidateData_2
+                );
+            }
+        }
+
+        return redirect()->route('blog.show')->with('success', 'Blog created successfully');
+    }
 
 
     /**
@@ -119,19 +121,29 @@ public function store(Request $request)
     $ValidateData = $request->validate([
         'blog_title'         => 'required|string|max:255',
         'blog_description'   => 'required|string',
-        'blog_slug' => 'required|string|unique:blogs_models,blog_slug,' . $blog->blog_id . ',blog_id',
+        'blog_slug'          => 'required|string|unique:blogs_models,blog_slug,' . $blog->blog_id . ',blog_id',
         'blog_content'       => 'required|string',
         'blog_tags'          => 'nullable|string',
         'blog_image'         => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
         'image_alt_text'     => 'required|string',
         'meta_title'         => 'required|string|max:255',
         'meta_description'   => 'required|string',
-        'shedule_date'       => 'nullable|date',
-        'shedule_time'       => 'nullable',
         'status'             => 'required|in:active,inactive',
+        'shedule_date'       => $request->status === 'inactive' ? 'required|date' : 'nullable|date',
+        'shedule_time'       => $request->status === 'inactive' ? 'required' : 'nullable',
     ]);
 
-    // Handle file upload (optional in edit)
+    // ✅ Handle publish/schedule datetime logic
+    if ($ValidateData['status'] === 'inactive') {
+        $ValidateData['published_at'] = $ValidateData['shedule_date'] . ' ' . $ValidateData['shedule_time'];
+    } else {
+        // If active, remove any scheduled datetime
+        $ValidateData['published_at'] = null;
+        $ValidateData['shedule_date'] = null;
+        $ValidateData['shedule_time'] = null;
+    }
+
+    // ✅ Handle file upload (optional in edit)
     if ($request->hasFile('blog_image')) {
         // Delete old image if exists
         $oldImage = public_path('blog_images/' . $blog->blog_image);
@@ -144,25 +156,23 @@ public function store(Request $request)
         $file->move(public_path('blog_images'), $filename);
         $ValidateData['blog_image'] = $filename;
     } else {
-        // Agar image update nahi karni, purani image rakhein
+        // Keep old image if no new image is uploaded
         $ValidateData['blog_image'] = $blog->blog_image;
     }
 
-    // Update blog data
+    // ✅ Update blog data
     $blog->update($ValidateData);
 
-    // Validate category IDs - agar nahi diye gaye to empty array set karo
+    // ✅ Handle category IDs (with pivot data)
     $category_ids = $request->validate([
         'category_id' => 'array',
     ]);
     $selectedCategoryIDs = $category_ids['category_id'] ?? [];
 
     $pivotData = [
-        'status' => $request->input('status', 'inactive'),  // extra pivot field agar aap use kar rahe hain
+        'status' => $request->input('status', 'inactive'),
     ];
 
-    // Sync categories with extra pivot data
-    // Agar koi category select nahi, to sync empty array kar dega, jisse purani links delete ho jayengi
     $syncData = collect($selectedCategoryIDs)->mapWithKeys(function ($id) use ($pivotData) {
         return [$id => $pivotData];
     })->toArray();
@@ -171,6 +181,7 @@ public function store(Request $request)
 
     return redirect()->route('blog.show')->with('success', 'Blog updated successfully.');
 }
+
 
 
 

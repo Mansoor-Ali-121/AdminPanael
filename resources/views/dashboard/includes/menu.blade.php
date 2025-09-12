@@ -9,10 +9,10 @@
         <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link mybtninadmin" href="{{ url('admin') }}">Dashboard</a>
+                    <a class="nav-link mybtninadmin" href="{{ route('admin.home') }}">Dashboard</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ route('user.add') }}">Users</a>
+                    <a class="nav-link" href="{{ route('user.show') }}">Users</a>
                 </li>
 
                 <li class="nav-item">

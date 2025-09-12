@@ -221,5 +221,48 @@
     }
 </script>
 
+<script>
+    let alternateIndexdelete = 0;
+    const oldAlternates = @json(old('alternate', []));
+
+    function addAlternate(hreflang = '', href = '') {
+        const container = document.getElementById('alternateContainer');
+
+        const html = `
+            <div class="alternate-group" style="margin-bottom: 15px; border-top: 1px solid #ccc; padding-top: 10px; position: relative;">
+                <h6>Alternate Page ${alternateIndex + 1}</h6>
+
+                <div class="form-group">
+                    <label for="hreflang_${alternateIndex}">hreflang:</label>
+                    <input type="text" name="alternate[${alternateIndex}][hreflang]" class="form-control" value="${hreflang}">
+                </div>
+
+                <div class="form-group">
+                    <label for="href_${alternateIndex}">href:</label>
+                    <input type="text" name="alternate[${alternateIndex}][href]" class="form-control" value="${href}">
+                </div>
+
+                <button type="button" class="btn btn-danger btn-sm remove-alternate" style="margin-top: 10px;">Delete</button>
+            </div>
+        `;
+
+        container.insertAdjacentHTML('beforeend', html);
+        alternateIndex++;
+    }
+
+    // Remove alternate group on delete button click
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.classList.contains('remove-alternate')) {
+            e.target.closest('.alternate-group').remove();
+        }
+    });
+
+    // Populate old alternates if they exist
+    if (oldAlternates.length > 0) {
+        oldAlternates.forEach(alt => {
+            addAlternate(alt.hreflang, alt.href);
+        });
+    }
+</script>
 
 @endsection

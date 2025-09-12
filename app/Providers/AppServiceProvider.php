@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Http\Middleware\CheckAdmin;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +21,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Middleware ko alias name se register kar raha hai
+        app('router')->aliasMiddleware('check.admin', CheckAdmin::class);
     }
 }

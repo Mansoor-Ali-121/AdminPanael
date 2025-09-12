@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BlogsController;
@@ -7,13 +8,20 @@ use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\RobotsController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\UserRegisterController;
-use Illuminate\Support\Facades\Route;
 
-Route::get('/', [AdminController::class, 'index'])->name('admin.home');
-
+// Auth Routes (Without middleware)
 Route::prefix('admin')->group(function () {
+    Route::get('/login', [AuthController::class, 'index'])->name('user.login');
+    Route::post('/login', [AuthController::class, 'login']);
+});
 
-    // Blogs Route
+// Admin Routes (With CheckAdmin middleware)
+Route::prefix('admin')->middleware('check.admin')->group(function () {
+
+    Route::get('/logout', [AuthController::class, 'logout'])->name('user.logout');
+    Route::get('/index', [AdminController::class, 'index'])->name('admin.home');
+
+    // Blogs Routes
     Route::get('/blogs/add', [BlogsController::class, 'index'])->name('blog.add');
     Route::post('/blogs/add', [BlogsController::class, 'store']);
     Route::get('/blogs/show', [BlogsController::class, 'show'])->name('blog.show');
@@ -22,26 +30,24 @@ Route::prefix('admin')->group(function () {
     Route::patch('/blogs/update/{id}', [BlogsController::class, 'update'])->name('blog.update');
     Route::delete('/blogs/delete/{id}', [BlogsController::class, 'destroy'])->name('blog.delete');
 
-    // Blogs Category Routes
+    // Blog Category Routes
     Route::get('/blogs/category/add', [CategoriesController::class, 'index'])->name('category.add');
     Route::post('/blogs/category/add', [CategoriesController::class, 'store']);
     Route::get('/blogs/category/show', [CategoriesController::class, 'show'])->name('category.show');
     Route::get('/blogs/category/edit/{id}', [CategoriesController::class, 'edit'])->name('category.edit');
     Route::patch('/blogs/category/update/{id}', [CategoriesController::class, 'update'])->name('category.update');
     Route::delete('/blogs/category/delete/{id}', [CategoriesController::class, 'destroy'])->name('category.delete');
-    
 
-    // Site map 
+    // Sitemap Routes
     Route::get('/add_url', [SitemapController::class, 'index'])->name('sitemap.add');
     Route::post('/add_url', [SitemapController::class, 'store']);
     Route::get('/sitemap', [SitemapController::class, 'show'])->name('sitemap.show');
     Route::get('/edit_url/{id}', [SitemapController::class, 'edit'])->name('sitemap.edit');
     Route::patch('/update_url/{id}', [SitemapController::class, 'update'])->name('sitemap.update');
     Route::delete('/delete_url/{id}', [SitemapController::class, 'destroy'])->name('sitemap.delete');
-    Route::delete('/delete_alternate/{id}', [SiteMapController::class, 'deleteAlternate'])->name('alternate.delete');
+    Route::delete('/delete_alternate/{id}', [SitemapController::class, 'deleteAlternate'])->name('alternate.delete');
 
-
-    // Robots routes
+    // Robots Routes
     Route::get('/add_robots', [RobotsController::class, 'index'])->name('robots.add');
     Route::post('/add_robots', [RobotsController::class, 'store']);
     Route::get('/robots', [RobotsController::class, 'show'])->name('robots.show');
@@ -49,17 +55,11 @@ Route::prefix('admin')->group(function () {
     Route::patch('/update_robots/{id}', [RobotsController::class, 'update'])->name('robots.update');
     Route::delete('/delete_robots/{id}', [RobotsController::class, 'destroy'])->name('robots.delete');
 
-    // User Routes 
+    // Users Routes
     Route::get('/users_add', [UserRegisterController::class, 'index'])->name('user.add');
     Route::post('/users_add', [UserRegisterController::class, 'store']);
     Route::get('/users_show', [UserRegisterController::class, 'show'])->name('user.show');
     Route::get('/users/edit/{id}', [UserRegisterController::class, 'edit'])->name('user.edit');
     Route::patch('/users/update/{id}', [UserRegisterController::class, 'update'])->name('user.update');
     Route::delete('/users/delete/{id}', [UserRegisterController::class, 'destroy'])->name('user.delete');
-
-    // Auth routes 
-    Route::get('/login', [AuthController::class, 'index'])->name('user.login');
-    Route::post('/login', [AuthController::class, 'login']);
-    Route::get('/logout', [AuthController::class, 'logout'])->name('user.logout');
-
 });

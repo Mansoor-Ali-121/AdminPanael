@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BlogsModel;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -11,8 +12,9 @@ class AdminController extends Controller
      */
     public function index()
     {
-
-        return view('dashboard.pages.dashboard');
+        $blogs = BlogsModel::all();
+        // return view('dashboard.Blogs.show', compact('blogs'));
+        return view('dashboard.pages.dashboard', compact('blogs'));
     }
 
     /**
