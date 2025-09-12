@@ -1,6 +1,6 @@
 @extends('template')
-@include('dashboard.additional.script-scripts')
 
+@include('dashboard.additional.script-scripts')
 @section('local-scripts')
     @yield('local-scripts-addBlog')
 @endsection
