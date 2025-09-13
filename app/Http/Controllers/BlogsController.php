@@ -133,7 +133,7 @@ class BlogsController extends Controller
         'shedule_time'       => $request->status === 'inactive' ? 'required' : 'nullable',
     ]);
 
-    // ✅ Handle publish/schedule datetime logic
+    //  Handle publish/schedule datetime logic
     if ($ValidateData['status'] === 'inactive') {
         $ValidateData['published_at'] = $ValidateData['shedule_date'] . ' ' . $ValidateData['shedule_time'];
     } else {
@@ -143,7 +143,7 @@ class BlogsController extends Controller
         $ValidateData['shedule_time'] = null;
     }
 
-    // ✅ Handle file upload (optional in edit)
+    //  Handle file upload (optional in edit)
     if ($request->hasFile('blog_image')) {
         // Delete old image if exists
         $oldImage = public_path('blog_images/' . $blog->blog_image);
@@ -160,10 +160,10 @@ class BlogsController extends Controller
         $ValidateData['blog_image'] = $blog->blog_image;
     }
 
-    // ✅ Update blog data
+    //  Update blog data
     $blog->update($ValidateData);
 
-    // ✅ Handle category IDs (with pivot data)
+    //  Handle category IDs (with pivot data)
     $category_ids = $request->validate([
         'category_id' => 'array',
     ]);

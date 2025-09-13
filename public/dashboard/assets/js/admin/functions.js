@@ -51,17 +51,16 @@ function previewMainImage(event) {
 }
 
 
-function generateSlug() {
-    var packageName = document.getElementById('blogSlug').value;
-    // var packageSlug = packageName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-    var packageSlug = packageName
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9äöüß]+/g, '-') // Allow ÄäÖöÜüß
-        .replace(/^-|-$/g, '');
+// function generateSlug() {
+//     var packageName = document.getElementById('blogSlug').value;
+//     var packageSlug = packageName
+//         .trim()
+//         .toLowerCase()
+//         .replace(/[^a-z0-9äöüß]+/g, '-') 
+//         .replace(/^-|-$/g, '');
 
-    document.getElementById('actual_slug').value = packageSlug;
-}
+//     document.getElementById('actual_slug').value = packageSlug;
+// }
 
 
 function slugify(text) {

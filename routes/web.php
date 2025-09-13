@@ -1,12 +1,13 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BlogsController;
-use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\RobotsController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\ServicesController;
+use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\UserRegisterController;
 
 // Auth Routes (Without middleware)
@@ -62,4 +63,12 @@ Route::prefix('admin')->middleware('check.admin')->group(function () {
     Route::get('/users/edit/{id}', [UserRegisterController::class, 'edit'])->name('user.edit');
     Route::patch('/users/update/{id}', [UserRegisterController::class, 'update'])->name('user.update');
     Route::delete('/users/delete/{id}', [UserRegisterController::class, 'destroy'])->name('user.delete');
+
+    // Services Routes
+    Route::get('/services/add', [ServicesController::class, 'index'])->name('service.add');
+    Route::post('/services/add', [ServicesController::class, 'store'])->name('service.store');
+    Route::get('/services', [ServicesController::class, 'show'])->name('service.show');
+    Route::get('/services/edit/{id}', [ServicesController::class, 'edit'])->name('service.edit');
+    Route::patch('/services/update/{id}', [ServicesController::class, 'update'])->name('service.update');
+    Route::delete('/services/delete/{id}', [ServicesController::class, 'destroy'])->name('service.delete');
 });

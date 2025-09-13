@@ -12,8 +12,7 @@
 
                     <!-- Blogs -->
                     <div class="sidebar-group has-submenu">
-                        <span
-                            class="sidebar-link {{ $segment2 === 'blogs' || $segment2 === 'index' ? 'active' : '' }}">
+                        <span class="sidebar-link {{ $segment2 === 'blogs' || $segment2 === 'index' ? 'active' : '' }}">
                             Blogs <i class="fa-solid fa-arrow-down arrow-icon"></i>
                         </span>
 
@@ -47,7 +46,6 @@
                         </div>
                     </div>
 
-
                     <!-- Admin Panel Users -->
                     <div class="sidebar-group has-submenu">
                         <span
@@ -65,6 +63,25 @@
                             </a>
                         </div>
                     </div>
+
+                    <!-- Services -->
+                    <div class="sidebar-group has-submenu">
+                        <span
+                            class="sidebar-link {{ in_array($segment2, ['services', 'services_add']) ? 'active' : '' }}">
+                            Services <i class="fa-solid fa-arrow-down arrow-icon"></i>
+                        </span>
+                        <div class="submenu {{ in_array($segment2, ['services', 'services_add']) ? 'active' : '' }}">
+                            <a href="{{ route('service.show') }}"
+                                class="submenu-link {{ $segment2 === 'services' && $segment3 === null ? 'active' : '' }}">
+                                View Services
+                            </a>
+                            <a href="{{ route('service.add') }}"
+                                class="submenu-link {{ $segment2 === 'services_add' ? 'active' : '' }}">
+                                Add New Service
+                            </a>
+                        </div>
+                    </div>
+
 
                     <!-- SEO Tools -->
                     <div class="sidebar-group has-submenu">

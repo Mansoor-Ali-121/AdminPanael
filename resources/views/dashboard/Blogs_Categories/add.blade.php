@@ -38,7 +38,7 @@
             <fieldset class="form-group">
                 <label for="actual_slug"><sup>*</sup>Category Slug (No Special Characters):</label>
                 <input type="text" id="actual_slug" name="actual_slug" class="form-control"
-                    value="{{ old('actual_slug') }}" onkeyup="generateSlug()" required>
+                    value="{{ old('actual_slug') }}" onkeyup="generateCatSlug()" required>
                 @error('actual_slug')
                     <small class="text-danger">{{ $message }}</small>
                 @enderror

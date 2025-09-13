@@ -34,7 +34,7 @@
 
 {{-- Categories Slug Generator --}}
 <script>
-    function generateSlug() {
+    function generateCatSlug() {
         const input = document.getElementById('actual_slug')?.value || '';
         const slug = input
             .toLowerCase()
