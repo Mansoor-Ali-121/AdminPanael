@@ -8,10 +8,26 @@ use App\Http\Controllers\RobotsController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\ServicesController;
 use App\Http\Controllers\CategoriesController;
+use App\Http\Controllers\Controller;
 use App\Http\Controllers\UserRegisterController;
+use App\Helpers\SitemapHelper;
+use Illuminate\Container\Attributes\Auth;
+
+Route::get('/', [Controller::class, 'index'])->name('home');
+Route::get('/about-us', [Controller::class, 'about'])->name('about');
+Route::get('/sitemap.xml', [Controller::class, 'sitemapXml'])->name('sitemap.xml');
+
+// Route::get('/admin', [AuthController::class, 'index'])->name('home');
+
 
 // Auth Routes (Without middleware)
 Route::prefix('admin')->group(function () {
+      Route::get('/', function () {
+        return redirect()->route('user.login');
+    });
+       Route::get('/dashboard', function () {
+        return redirect()->route('user.login');
+    });
     Route::get('/login', [AuthController::class, 'index'])->name('user.login');
     Route::post('/login', [AuthController::class, 'login']);
 });
@@ -72,3 +88,11 @@ Route::prefix('admin')->middleware('check.admin')->group(function () {
     Route::patch('/services/update/{id}', [ServicesController::class, 'update'])->name('service.update');
     Route::delete('/services/delete/{id}', [ServicesController::class, 'destroy'])->name('service.delete');
 });
+// use App\Helpers\SitemapHelper;
+
+Route::get('/{slug}', function ($slug) {
+    return SitemapHelper::getpagecontentforthisurl($slug);
+});
+
+
+// require_once app_path('Helpers/SitemapHelper.php');

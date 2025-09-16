@@ -26,5 +26,11 @@ public function alternates()
 {
     return $this->hasMany(AlternatePageModel::class, 'sitemap_id', 'sitemap_id');
 }
+   // Add this static method for sitemap data
+    public static function get_sitemap()
+    {
+      return self::where('status', 'active')->get()->toArray();
+
+    }
 
 }

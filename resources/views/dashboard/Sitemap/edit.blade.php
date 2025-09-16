@@ -147,7 +147,11 @@
 
     {{-- Buttons --}}
     <div style="display: flex; justify-content: space-between;">
+        <div>
         <button type="submit" name="submit" class="btn btn-primary">Update</button>
+        {{-- Back btn  --}}
+        <a href="{{ route('sitemap.show') }}" class="btn btn-secondary">Back</a>
+        </div>
         <button type="button" onclick="addAlternate()" class="btn btn-secondary">Add Alternate Page</button>
     </div>
 </form>
