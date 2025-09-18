@@ -2,6 +2,14 @@
 
 @section('dashboard-content')
     @include('dashboard.includes.alerts')
+
+    {{-- Google Indexing API ka response dikhane ke liye --}}
+    @if(session('google_response'))
+        <div class="alert alert-info mt-2">
+            {{ session('google_response') }}
+        </div>
+    @endif
+
     <script>
         $(document).ready(function() {
             $('.toggle-btn').on('click', function() {
@@ -35,7 +43,7 @@
                     <td style="word-break: break-word;">{{ $url->url }}</td>
                     <td style="word-break: break-word;">{{ $url->canonical ?? 'N/A' }}</td>
 
-                          {{-- Priority --}}
+                    {{-- Priority --}}
                     <td>
                         <div class="line-clamp">
                             {{ $url->priority }}
@@ -48,8 +56,9 @@
                             {{ $url->schema ?? 'N/A' }}
                         </div>
                         @if (!empty($url->schema) && trim($url->schema) !== '')
-                            <button class="btn btn-link p-0 toggle-btn" data-target="schema-{{ $url->id }}">Show
-                                More</button>
+                            <button class="btn btn-link p-0 toggle-btn" data-target="schema-{{ $url->id }}">
+                                Show More
+                            </button>
                         @endif
                     </td>
 
@@ -59,15 +68,16 @@
                             {{ $url->pagecontent ?? 'N/A' }}
                         </div>
                         @if (!empty($url->pagecontent) && trim($url->pagecontent) !== '')
-                            <button class="btn btn-link p-0 toggle-btn" data-target="content-{{ $url->id }}">Show
-                                More</button>
+                            <button class="btn btn-link p-0 toggle-btn" data-target="content-{{ $url->id }}">
+                                Show More
+                            </button>
                         @endif
                     </td>
 
                     <td>
                         <a href="{{ route('sitemap.edit', $url->sitemap_id) }}" class="btn btn-secondary btn-sm">Edit</a>
                         <form action="{{ route('sitemap.delete', $url->sitemap_id) }}" method="POST"
-                            onsubmit="return confirm('Are you sure?')">
+                              onsubmit="return confirm('Are you sure?')">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-secondary btn-sm">Delete</button>
@@ -76,6 +86,5 @@
                 </tr>
             @endforeach
         </tbody>
-
     </table>
 @endsection

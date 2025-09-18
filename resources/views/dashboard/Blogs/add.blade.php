@@ -206,10 +206,4 @@
         <a href="{{ route('blog.show') }}" class="btn btn-secondary">Back</a>
     </form>
 
-    {{-- Blogs Slug --}}
-    <script>
-        function generateSlug() {
-            console.log('jjj');
-        }
-    </script>
 @endsection

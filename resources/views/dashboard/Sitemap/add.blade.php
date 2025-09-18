@@ -26,27 +26,48 @@
 <form action="{{ route('sitemap.add') }}" method="post">
     @csrf
 
-    {{-- URL Field --}}
+    {{-- Google Indexing Checkbox --}}
+    <div class="form-group form-check mb-3">
+        <input type="checkbox" class="form-check-input" id="send_to_google" name="send_to_google" value="yes"
+            {{ old('send_to_google') == 'yes' ? 'checked' : '' }}>
+        <label class="form-check-label" for="send_to_google">Send this URL to Google Indexing</label>
+    </div>
+
+
+    {{-- Status Field --}}
     <div class="form-group">
-        <label for="url">URL:</label>
-        <input type="text" id="url" name="url" class="form-control" onkeyup="generateurl()"
-            value="{{ old('url') }}">
-        @error('url')
+        <label for="status">Status:</label>
+        <select id="status" name="status" class="form-control">
+            <option value="active" {{ old('status') == 'active' ? 'selected' : '' }}>Active</option>
+            <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
+        </select>
+        @error('status')
             <small class="text-danger">{{ $message }}</small>
         @enderror
     </div>
 
-    {{-- Actual URL (readonly field) --}}
+    {{-- Url Field (user yahan slug likhega) --}}
     <div class="form-group">
-        <label for="actual_url">Actual Url:</label>
-        <input class="form-control" type="text" name="actual_url" id="actual_url" readonly
-            placeholder="This url will be sent for google Indexing" value="{{ old('actual_url') }}">
+        <label for="actual_url">URL:</label>
+        <input type="text" id="actual_url" name="actual_url" class="form-control" onkeyup="generateurl()"
+            value="{{ old('actual_url') }}">
         @error('actual_url')
             <small class="text-danger">{{ $message }}</small>
         @enderror
     </div>
 
-    {{-- Priority: --}}
+    {{-- Full URL Field (readonly, Google ko ye bhejna hai) --}}
+    <div class="form-group">
+        <label for="url">Actual URL:</label>
+        <input class="form-control" type="text" name="url" id="url" readonly
+            placeholder="This url will be sent for google Indexing" value="{{ old('url') }}">
+        @error('url')
+            <small class="text-danger">{{ $message }}</small>
+        @enderror
+    </div>
+
+
+    {{-- Priority --}}
     <div class="form-group">
         <label for="priority">Priority:</label>
         <input type="number" id="priority" name="priority" class="form-control" min="0" step="0.1"
@@ -64,8 +85,6 @@
             <small class="text-danger">{{ $message }}</small>
         @enderror
     </div>
-
-
 
     {{-- Meta Title --}}
     <div class="form-group">
@@ -109,29 +128,29 @@
 
     {{-- Submit Buttons --}}
     <div style="display: flex; justify-content: space-between;">
-         <div>
-        <button type="submit" name="submit" class="btn btn-primary">add</button>
-        {{-- Back btn  --}}
-        <a href="{{ route('sitemap.show') }}" class="btn btn-secondary">Back</a>
+        <div>
+            <button type="submit" name="submit" class="btn btn-primary">Add</button>
+            <a href="{{ route('sitemap.show') }}" class="btn btn-secondary">Back</a>
         </div>
         <button type="button" onclick="addAlternate()" class="btn btn-secondary">Add Alternate Page</button>
     </div>
 </form>
 
-{{-- Actual URL --}}
+
+{{--  URL slug --}}
+{{-- Script --}}
 <script>
     function generateurl() {
-        var packageName = document.getElementById('url').value;
-        document.getElementById('actual_url').value = "";
-        if (!packageName.includes('test.com')) {
-            var fullUrl = 'https://test.com/' + packageName;
-            document.getElementById('actual_url').value = fullUrl;
+        var slug = document.getElementById('actual_url').value.trim();
+        if (slug !== "") {
+            var fullUrl = 'https://devshieldit.com/' + slug;
+            document.getElementById('url').value = fullUrl;
         } else {
-            document.getElementById('actual_url').value =
-                "this url will not be sent to goole for indexing because it contains site url";
+            document.getElementById('url').value = "";
         }
     }
 </script>
+
 
 <script>
     let alternateIndex = 0;

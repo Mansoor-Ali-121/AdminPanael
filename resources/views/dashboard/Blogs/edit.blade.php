@@ -1,6 +1,7 @@
 @extends('template')
-
 @include('dashboard.additional.script-scripts')
+
+
 @section('local-scripts')
     @yield('local-scripts-addBlog')
 @endsection
@@ -69,7 +70,7 @@
             <fieldset class="form-group">
                 <label for="actual_slug"><sup>*</sup>Blog Slug (Custom):</label>
                 <input type="text" id="actual_slug" class="form-control"
-                    value="{{ old('actual_slug', $blog->blog_slug) }}" onkeyup="generateSlug()" required>
+                    value="{{ old('actual_slug', $blog->blog_slug) }}" onkeyup="generateBlogSlug()" required>
             </fieldset>
 
             {{-- Auto-generated slug (readonly + saved to DB) --}}
@@ -151,4 +152,5 @@
         <button type="submit" name="submit" class="btn btn-primary">Update Blog</button>
         <a href="{{ route('blog.show') }}" class="btn btn-secondary">Back</a>
     </form>
+
 @endsection

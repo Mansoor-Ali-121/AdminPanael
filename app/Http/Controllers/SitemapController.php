@@ -9,51 +9,48 @@ use Illuminate\Database\QueryException;
 
 class SitemapController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         return view('dashboard.Sitemap.add');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-
     public function store(Request $request)
     {
         try {
-            // Step 1: Validate input
+            // Checkbox handle: agar checked hai tabhi aage validate aur store hoga
+            if (!$request->has('send_to_google')) {
+                return redirect()->back()->with('info', 'Send to Google checkbox was not checked. Nothing saved.');
+            }
+
+            // Validate input
             $validatedData = $request->validate([
                 'url' => 'required|string|unique:site_maps,url|max:255',
+                'send_to_google' => 'nullable|in:yes,no',
                 'canonical' => 'nullable|string|max:255',
-                'priority' => 'numeric',
+                'priority' => 'nullable|numeric',
                 'schema' => 'nullable|string',
                 'meta_title' => 'nullable|string|max:255',
                 'meta_description' => 'nullable|string|max:255',
-                'status' => 'in:active,inactive',
+                'status' => 'required|in:active,inactive',
                 'pagecontent' => 'nullable|string',
                 'alternate.*.hreflang' => 'nullable|string|max:10',
                 'alternate.*.href' => 'nullable|string|max:255',
             ]);
 
-            // Step 2: Create main sitemap record
+            // Checkbox ke liye set karen
+            $validatedData['send_to_google'] = 'yes';
+
+            // Create main sitemap record
             $sitemap = SiteMap::create($validatedData);
 
-            // Step 3: Insert alternates only if both fields are filled
+            // Insert alternates
             $sitemapId = $sitemap->sitemap_id;
-
-            $alternates = $request->input('alternate', []); // default to []
-
+            $alternates = $request->input('alternate', []);
             foreach ($alternates as $alt) {
                 if (!empty($alt['hreflang']) && !empty($alt['href'])) {
                     AlternatePageModel::create([
@@ -64,35 +61,60 @@ class SitemapController extends Controller
                 }
             }
 
-            return redirect()->route('sitemap.show')->with('success', 'Page and alternates saved successfully!');
+            // Google Indexing API call
+            $apiResponse = $this->sendIndexingRequest($validatedData['url']);
+
+            return redirect()->route('sitemap.show')
+                ->with('success', 'URL added & sent to Google for indexing! API response: ' . $apiResponse);
         } catch (QueryException $e) {
-            // Agar duplicate entry error aaye to ye message show kar
-            if ($e->getCode() == 23000) { // MySQL duplicate entry code
+            if ($e->getCode() == "23000") {
                 return redirect()->back()
-                    ->withErrors(['url' => 'The url has already been taken.'])
+                    ->withErrors(['url' => 'The URL has already been taken.'])
                     ->withInput();
             }
 
-            // Agar koi aur error ho to usko phir se throw kar
             throw $e;
         }
     }
 
 
+    private function sendIndexingRequest($url, $type = 'URL_UPDATED')
+    {
+        try {
+            // Google client setup
+            $client = new \Google_Client();
+            $client->setAuthConfig(storage_path('app/google/service-account.json'));
+            $client->addScope('https://www.googleapis.com/auth/indexing');
+
+            // Indexing service init
+            $service = new \Google_Service_Indexing($client);
+
+            // Request body
+            $body = new \Google_Service_Indexing_UrlNotification();
+            $body->setUrl($url);
+            $body->setType($type);
+
+            // API call
+            $response = $service->urlNotifications->publish($body);
+
+            // Friendly success message
+            return "✅ URL successfully send to google for indexing: {$url}";
+        } catch (\Google_Service_Exception $e) {
+            // Google API specific error
+            return "❌ Google Indexing Failed for {$url}. Reason: " . $e->getMessage();
+        } catch (\Exception $e) {
+            // General error
+            return "❌ Something went wrong for {$url}. Error: " . $e->getMessage();
+        }
+    }
 
 
-    /**
-     * Display the specified resource.
-     */
     public function show()
     {
         $urls = SiteMap::all();
         return view('dashboard.Sitemap.show', compact('urls'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
         $sitemap = SiteMap::findOrFail($id);
@@ -100,108 +122,94 @@ class SitemapController extends Controller
         return view('dashboard.Sitemap.edit', compact('sitemap', 'alternatePages'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    //    use Illuminate\Database\QueryException;
+  public function update(Request $request, $id)
+{
+    // AJAX delete alternate handling
+    if ($request->ajax() && $request->input('action') === 'delete_alternate') {
+        $alternateId = $request->input('alternate_id');
+        $alternate = AlternatePageModel::find($alternateId);
+        if ($alternate) {
+            $alternate->delete();
+            return response()->json(['status' => 'success']);
+        }
+        return response()->json(['status' => 'error', 'message' => 'Alternate not found']);
+    }
 
-    public function update(Request $request, $id)
-    {
-        // AJAX delete request handle karo
-        if ($request->ajax() && $request->input('action') === 'delete_alternate') {
-            $alternateId = $request->input('alternate_id');
+    try {
+        // Validation
+        $validatedData = $request->validate([
+            'url' => 'required|string|max:255|unique:site_maps,url,' . $id . ',sitemap_id',
+            'canonical' => 'nullable|string|max:255',
+            'priority' => 'numeric|min:0|max:1',
+            'schema' => 'nullable|string',
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string|max:255',
+            'status' => 'in:active,inactive',
+            'send_to_google' => 'in:yes,no',
+            'pagecontent' => 'nullable|string',
+            'alternate.*.alternate_id' => 'nullable|integer|exists:alternate_page_models,alternate_id',
+            'alternate.*.hreflang' => 'nullable|string|max:10',
+            'alternate.*.href' => 'nullable|string|max:255',
+        ]);
 
-            $alternate = AlternatePageModel::find($alternateId);
-            if ($alternate) {
-                $alternate->delete();
-                return response()->json(['status' => 'success']);
-            }
+        // Checkbox handle
+        $validatedData['send_to_google'] = $request->has('send_to_google') ? 'yes' : 'no';
 
-            return response()->json(['status' => 'error', 'message' => 'Alternate not found']);
+        // Update main sitemap
+        $sitemap = SiteMap::findOrFail($id);
+        $sitemap->update($validatedData);
+
+        // Google Indexing API call
+        $apiResponse = null;
+        if ($validatedData['send_to_google'] === 'yes') {
+            $apiResponse = $this->sendIndexingRequest($validatedData['url']);
         }
 
-        try {
-            // Validation
-            $validatedData = $request->validate([
-                'url' => 'required|string|max:255|unique:site_maps,url,' . $id . ',sitemap_id',
-                'canonical' => 'nullable|string|max:255',
-                'priority' => 'numeric|min:0|max:1',
-                'schema' => 'nullable|string',
-                'meta_title' => 'nullable|string|max:255',
-                'meta_description' => 'nullable|string|max:255',
-                'status' => 'in:active,inactive',
-                'pagecontent' => 'nullable|string',
+        // Handle alternates
+        $inputAlternates = $request->input('alternate', []);
+        $existingIds = $sitemap->alternates()->pluck('alternate_id')->toArray();
+        $inputIds = collect($inputAlternates)->pluck('alternate_id')->filter()->toArray();
+        $idsToDelete = array_diff($existingIds, $inputIds);
+        AlternatePageModel::destroy($idsToDelete);
 
-                'alternate.*.alternate_id' => 'nullable|integer|exists:alternate_page_models,alternate_id',
-                'alternate.*.hreflang' => 'nullable|string|max:10',
-                'alternate.*.href' => 'nullable|string|max:255',
-            ]);
-
-            // Find the main sitemap record
-            $sitemap = SiteMap::findOrFail($id);
-
-            // Update main sitemap record with validated data
-            $sitemap->update($validatedData);
-
-            // Process alternates
-            $inputAlternates = $request->input('alternate', []);
-
-            // Get existing alternate IDs
-            $existingIds = $sitemap->alternates()->pluck('alternate_id')->toArray();
-
-            // Get IDs from the request input (filtering out empty/null)
-            $inputIds = collect($inputAlternates)
-                ->pluck('alternate_id')
-                ->filter() // removes null and empty values
-                ->toArray();
-
-            // Find IDs that need to be deleted (existing but not in the new input)
-            $idsToDelete = array_diff($existingIds, $inputIds);
-
-            // Delete alternates that are removed
-            AlternatePageModel::destroy($idsToDelete);
-
-            // Loop through input alternates to update or create
-            foreach ($inputAlternates as $alt) {
-                // Update existing alternate page
-                if (!empty($alt['alternate_id'])) {
-                    // Only update if both hreflang and href are provided (to avoid saving empty data)
-                    if (!empty($alt['hreflang']) && !empty($alt['href'])) {
-                        AlternatePageModel::where('alternate_id', $alt['alternate_id'])->update([
-                            'hreflang' => $alt['hreflang'],
-                            'href' => $alt['href'],
-                        ]);
-                    } else {
-                        // If either field is empty, delete this alternate to avoid empty rows
-                        AlternatePageModel::where('alternate_id', $alt['alternate_id'])->delete();
-                    }
-                }
-                // Create new alternate page if both fields are filled
-                elseif (!empty($alt['hreflang']) && !empty($alt['href'])) {
-                    $sitemap->alternates()->create([
+        foreach ($inputAlternates as $alt) {
+            if (!empty($alt['alternate_id'])) {
+                if (!empty($alt['hreflang']) && !empty($alt['href'])) {
+                    AlternatePageModel::where('alternate_id', $alt['alternate_id'])->update([
                         'hreflang' => $alt['hreflang'],
                         'href' => $alt['href'],
                     ]);
+                } else {
+                    AlternatePageModel::where('alternate_id', $alt['alternate_id'])->delete();
                 }
+            } elseif (!empty($alt['hreflang']) && !empty($alt['href'])) {
+                $sitemap->alternates()->create([
+                    'hreflang' => $alt['hreflang'],
+                    'href' => $alt['href'],
+                ]);
             }
-
-            return redirect()->route('sitemap.show')->with('success', 'Page updated!');
-        } catch (QueryException $e) {
-            // Agar duplicate entry error aaye to ye message show kar
-            if ($e->getCode() == 23000) { // MySQL duplicate entry code
-                return redirect()->back()
-                    ->withErrors(['url' => 'The url has already been taken.'])
-                    ->withInput();
-            }
-
-            // Agar koi aur error ho to usko phir se throw kar
-            throw $e;
         }
-    }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+        // ✅ Redirect with API response if exists
+        $message = 'Page updated!';
+        if ($apiResponse) {
+            $message .= ' ' . $apiResponse;
+        }
+
+        return redirect()->route('sitemap.show')->with('success', $message);
+
+    } catch (QueryException $e) {
+        if ($e->getCode() == 23000) {
+            return redirect()->back()
+                ->withErrors(['url' => 'The URL has already been taken.'])
+                ->withInput();
+        }
+
+        throw $e;
+    }
+}
+
+
     public function destroy(string $id)
     {
         $sitemap = SiteMap::findOrFail($id);

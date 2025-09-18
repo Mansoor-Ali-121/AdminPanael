@@ -26,27 +26,37 @@
     @csrf
     @method('PATCH')
 
-    {{-- URL --}}
-    <div class="form-group">
-        <label for="url">URL:</label>
-        <input type="text" id="url" name="url" class="form-control" onkeyup="generateurl()"
-            value="{{ old('url', $sitemap->url) }}">
-        @error('url')
-            <small class="text-danger">{{ $message }}</small>
-        @enderror
+    {{-- Google Indexing Checkbox --}}
+    <div class="form-group form-check mb-3">
+        <input type="checkbox" class="form-check-input" id="send_to_google" name="send_to_google" value="yes"
+            {{ old('send_to_google', $sitemap->send_to_google ?? 'no') === 'yes' ? 'checked' : '' }}>
+        <label class="form-check-label" for="send_to_google">
+            Send this URL to Google Indexing
+        </label>
     </div>
 
-    {{-- Actual URL --}}
+    {{-- URL (user types slug here) --}}
     <div class="form-group">
-        <label for="actual_url">Actual Url:</label>
-        <input class="form-control" type="text" name="actual_url" id="actual_url" readonly
+        <label for="actual_url">URL:</label>
+        <input type="text" id="actual_url" name="actual_url" class="form-control" onkeyup="generateurl()"
             value="{{ old('actual_url', $sitemap->actual_url) }}">
         @error('actual_url')
             <small class="text-danger">{{ $message }}</small>
         @enderror
     </div>
 
-    {{-- Priority: --}}
+    {{-- Full URL stored in database --}}
+    <div class="form-group">
+        <label for="url">Actual Url:</label>
+        <input class="form-control" type="text" name="url" id="url" readonly
+            value="{{ old('url', $sitemap->url) }}">
+        @error('url')
+            <small class="text-danger">{{ $message }}</small>
+        @enderror
+    </div>
+
+
+    {{-- Priority --}}
     <div class="form-group">
         <label for="priority">Priority:</label>
         <input type="number" id="priority" name="priority" class="form-control" min="0" step="0.1"
@@ -104,168 +114,102 @@
         @enderror
     </div>
 
-   {{-- Alternate Pages Container --}}
-<div id="alternateContainer" style="margin-top: 20px;">
-    @foreach (old('alternate', $sitemap->alternates ?? []) as $index => $alternate)
-        @php
-            $altId = $alternate['alternate_id'] ?? ($alternate->alternate_id ?? null);
-            $hreflang = old("alternate.$index.hreflang", $alternate['hreflang'] ?? ($alternate->hreflang ?? ''));
-            $href = old("alternate.$index.href", $alternate['href'] ?? ($alternate->href ?? ''));
-        @endphp
-
-        <div class="alternate-group"
-             id="alternate-{{ $altId ?? 'new_' . $index }}"
-             style="margin-bottom: 15px; border-top: 1px solid #ccc; padding-top: 10px;">
-
-            <h6>Alternate Page {{ $index + 1 }}</h6>
-
-            {{-- Hidden alternate_id --}}
-            <input type="hidden" name="alternate[{{ $index }}][alternate_id]" value="{{ $altId }}">
-
-            <div class="form-group">
-                <label>hreflang:</label>
-                <input type="text" name="alternate[{{ $index }}][hreflang]" class="form-control" value="{{ $hreflang }}">
-            </div>
-
-            <div class="form-group">
-                <label>href:</label>
-                <input type="text" name="alternate[{{ $index }}][href]" class="form-control" value="{{ $href }}">
-            </div>
-
-            {{-- Show Delete button if record exists in DB --}}
-            @if ($altId)
-                <button type="button" class="btn btn-danger btn-sm mt-2"
-                        onclick="deleteAlternate({{ $altId }})">
-                    Delete
-                </button>
-            @endif
-        </div>
-    @endforeach
-</div>
-
-
+    {{-- Alternate Pages Container --}}
+    <div id="alternateContainer" style="margin-top: 20px;"></div>
 
     {{-- Buttons --}}
     <div style="display: flex; justify-content: space-between;">
         <div>
-        <button type="submit" name="submit" class="btn btn-primary">Update</button>
-        {{-- Back btn  --}}
-        <a href="{{ route('sitemap.show') }}" class="btn btn-secondary">Back</a>
+            <button type="submit" name="submit" class="btn btn-primary">Update</button>
+            <a href="{{ route('sitemap.show') }}" class="btn btn-secondary">Back</a>
         </div>
         <button type="button" onclick="addAlternate()" class="btn btn-secondary">Add Alternate Page</button>
     </div>
 </form>
 
-{{-- JavaScript --}}
+{{-- Scripts --}}
 <script>
     function generateurl() {
-        var packageName = document.getElementById('url').value;
-        document.getElementById('actual_url').value = "";
-        if (!packageName.includes('test.com')) {
-            var fullUrl = 'https://test.com/' + packageName;
-            document.getElementById('actual_url').value = fullUrl;
+        var slug = document.getElementById('actual_url').value.trim(); // user types here
+        if (slug !== "") {
+            var fullUrl = 'https://devshieldit.com/' + slug; // domain
+            document.getElementById('url').value = fullUrl; // readonly field me assign
         } else {
-            document.getElementById('actual_url').value =
-                "this url will not be sent to google for indexing because it contains site url";
+            document.getElementById('url').value = "";
         }
     }
 
-    let alternateIndex = {{ count(old('alternate', $sitemap->alternates ?? [])) }};
 
-    function addAlternate() {
-        const container = document.getElementById('alternateContainer');
+    // Alternate Pages Handling
+    let alternateIndex = 0;
+    const container = document.getElementById('alternateContainer');
+    const oldAlternates = @json(old('alternate', $sitemap->alternates ?? []));
+
+    function addAlternate(hreflang = '', href = '', altId = null) {
         const html = `
-        <div class="alternate-group" style="margin-bottom: 15px; border-top: 1px solid #ccc; padding-top: 10px;">
-            <h6>Alternate Page ${alternateIndex + 1}</h6>
-            <div class="form-group">
-                <label>hreflang:</label>
-                <input type="text" name="alternate[${alternateIndex}][hreflang]" class="form-control">
-            </div>
-            <div class="form-group">
-                <label>href:</label>
-                <input type="text" name="alternate[${alternateIndex}][href]" class="form-control">
-            </div>
-        </div>
-        `;
-        container.insertAdjacentHTML('beforeend', html);
-        alternateIndex++;
-    }
-</script>
-
-{{-- Delete Alternate --}}
-<script>
-    function deleteAlternate(id) {
-        if (!confirm('Are you sure you want to delete this alternate?')) {
-            return;
-        }
-
-        const url = "{{ route('alternate.delete', ['id' => ':id']) }}".replace(':id', id);
-
-        fetch(url, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                // Remove the alternate block from DOM
-                document.getElementById('alternate-' + id).remove();
-            } else {
-                alert(data.message || 'Failed to delete. Try again.');
-            }
-        })
-        .catch(error => {
-            console.error(error);
-            alert('An error occurred. Please try again.');
-        });
-    }
-</script>
-
-<script>
-    let alternateIndexdelete = 0;
-    const oldAlternates = @json(old('alternate', []));
-
-    function addAlternate(hreflang = '', href = '') {
-        const container = document.getElementById('alternateContainer');
-
-        const html = `
-            <div class="alternate-group" style="margin-bottom: 15px; border-top: 1px solid #ccc; padding-top: 10px; position: relative;">
+            <div class="alternate-group" id="alternate-${altId ?? 'new_' + alternateIndex}" style="margin-bottom: 15px; border-top: 1px solid #ccc; padding-top: 10px; position: relative;">
                 <h6>Alternate Page ${alternateIndex + 1}</h6>
 
+                <input type="hidden" name="alternate[${alternateIndex}][alternate_id]" value="${altId ?? ''}">
+
                 <div class="form-group">
-                    <label for="hreflang_${alternateIndex}">hreflang:</label>
+                    <label>hreflang:</label>
                     <input type="text" name="alternate[${alternateIndex}][hreflang]" class="form-control" value="${hreflang}">
                 </div>
 
                 <div class="form-group">
-                    <label for="href_${alternateIndex}">href:</label>
+                    <label>href:</label>
                     <input type="text" name="alternate[${alternateIndex}][href]" class="form-control" value="${href}">
                 </div>
 
-                <button type="button" class="btn btn-danger btn-sm remove-alternate" style="margin-top: 10px;">Delete</button>
+                ${altId ? `<button type="button" class="btn btn-danger btn-sm mt-2" onclick="deleteAlternate(${altId})">Delete</button>` 
+                        : `<button type="button" class="btn btn-danger btn-sm remove-alternate" style="margin-top: 10px;">Delete</button>`}
             </div>
         `;
-
         container.insertAdjacentHTML('beforeend', html);
         alternateIndex++;
     }
 
-    // Remove alternate group on delete button click
+    // Populate old alternates
+    oldAlternates.forEach((alt, idx) => {
+        const hreflang = alt.hreflang ?? '';
+        const href = alt.href ?? '';
+        const altId = alt.alternate_id ?? null;
+        addAlternate(hreflang, href, altId);
+    });
+
+    // Remove dynamically added alternate
     document.addEventListener('click', function(e) {
         if (e.target && e.target.classList.contains('remove-alternate')) {
             e.target.closest('.alternate-group').remove();
         }
     });
 
-    // Populate old alternates if they exist
-    if (oldAlternates.length > 0) {
-        oldAlternates.forEach(alt => {
-            addAlternate(alt.hreflang, alt.href);
-        });
+    // AJAX Delete alternate
+    function deleteAlternate(id) {
+        if (!confirm('Are you sure you want to delete this alternate?')) return;
+
+        const url = "{{ route('alternate.delete', ['id' => ':id']) }}".replace(':id', id);
+        fetch(url, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    document.getElementById('alternate-' + id).remove();
+                } else {
+                    alert(data.message || 'Failed to delete. Try again.');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('An error occurred. Please try again.');
+            });
     }
 </script>
 

@@ -11,6 +11,8 @@ use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\UserRegisterController;
 use App\Helpers\SitemapHelper;
+use App\Http\Controllers\ApiController;
+use App\Http\Controllers\DeBlogsController;
 use Illuminate\Container\Attributes\Auth;
 
 Route::get('/', [Controller::class, 'index'])->name('home');
@@ -22,10 +24,10 @@ Route::get('/sitemap.xml', [Controller::class, 'sitemapXml'])->name('sitemap.xml
 
 // Auth Routes (Without middleware)
 Route::prefix('admin')->group(function () {
-      Route::get('/', function () {
+    Route::get('/', function () {
         return redirect()->route('user.login');
     });
-       Route::get('/dashboard', function () {
+    Route::get('/dashboard', function () {
         return redirect()->route('user.login');
     });
     Route::get('/login', [AuthController::class, 'index'])->name('user.login');
@@ -64,6 +66,9 @@ Route::prefix('admin')->middleware('check.admin')->group(function () {
     Route::delete('/delete_url/{id}', [SitemapController::class, 'destroy'])->name('sitemap.delete');
     Route::delete('/delete_alternate/{id}', [SitemapController::class, 'deleteAlternate'])->name('alternate.delete');
 
+    // Api routes 
+    Route::get('/index-sitemap', [ApiController::class, 'indexSitemap']);
+
     // Robots Routes
     Route::get('/add_robots', [RobotsController::class, 'index'])->name('robots.add');
     Route::post('/add_robots', [RobotsController::class, 'store']);
@@ -87,9 +92,19 @@ Route::prefix('admin')->middleware('check.admin')->group(function () {
     Route::get('/services/edit/{id}', [ServicesController::class, 'edit'])->name('service.edit');
     Route::patch('/services/update/{id}', [ServicesController::class, 'update'])->name('service.update');
     Route::delete('/services/delete/{id}', [ServicesController::class, 'destroy'])->name('service.delete');
+
+    // De German blogs
+    Route::get('/de/blogs/add', [DeBlogsController::class, 'deIndex'])->name('de.blog.add');
+    Route::post('/de/blogs/add', [DeBlogsController::class, 'deStore']);
+    Route::get('/de/blogs/show', [DeBlogsController::class, 'deShow'])->name('de.blog.show');
+    Route::get('/de/blogs/view/{id}', [DeBlogsController::class, 'deView'])->name('de.blog.view');
+    Route::get('/de/blogs/edit/{id}', [DeBlogsController::class, 'deEdit'])->name('de.blog.edit');
+    Route::patch('/de/blogs/update/{id}', [DeBlogsController::class, 'deUpdate'])->name('de.blog.update');
+    Route::delete('/de/blogs/delete/{id}', [DeBlogsController::class, 'deDestroy'])->name('de.blog.delete');
 });
 // use App\Helpers\SitemapHelper;
 
+// Site map  helper function
 Route::get('/{slug}', function ($slug) {
     return SitemapHelper::getpagecontentforthisurl($slug);
 });
