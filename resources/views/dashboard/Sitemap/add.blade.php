@@ -26,13 +26,21 @@
 <form action="{{ route('sitemap.add') }}" method="post">
     @csrf
 
-    {{-- Google Indexing Checkbox --}}
-    <div class="form-group form-check mb-3">
-        <input type="checkbox" class="form-check-input" id="send_to_google" name="send_to_google" value="yes"
-            {{ old('send_to_google') == 'yes' ? 'checked' : '' }}>
-        <label class="form-check-label" for="send_to_google">Send this URL to Google Indexing</label>
-    </div>
+    <div class="d-flex justify-content-center gap-3">
+        {{-- Google Indexing Checkbox --}}
+        <div class="form-group form-check mb-3">
+            <input type="checkbox" class="form-check-input" id="send_to_google" name="send_to_google" value="yes"
+                {{ old('send_to_google') == 'yes' ? 'checked' : '' }}>
+            <label class="form-check-label" for="send_to_google">Send this URL to Google Indexing</label>
+        </div>
 
+        {{-- Bing Indexing Checkbox --}}
+        <div class="form-group form-check mb-3">
+            <input type="checkbox" class="form-check-input" id="send_to_indexnow" name="send_to_indexnow" value="yes"
+                {{ old('send_to_indexnow') == 'yes' ? 'checked' : '' }}>
+            <label class="form-check-label" for="send_to_indexnow">Send this URL to Bing Indexing</label>
+        </div>
+    </div>
 
     {{-- Status Field --}}
     <div class="form-group">

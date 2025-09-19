@@ -18,7 +18,8 @@ class SiteMap extends Model
         'meta_description',
         'status',
         'pagecontent',
-        'send_to_google'
+        'send_to_google',
+        'send_to_indexnow',
 
     ];
 

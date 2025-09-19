@@ -61,13 +61,14 @@ Route::prefix('admin')->middleware('check.admin')->group(function () {
     Route::get('/add_url', [SitemapController::class, 'index'])->name('sitemap.add');
     Route::post('/add_url', [SitemapController::class, 'store']);
     Route::get('/sitemap', [SitemapController::class, 'show'])->name('sitemap.show');
+    Route::post('/sitemap/inspect-url', [SitemapController::class, 'inspectUrl'])->name('sitemap.inspect');
     Route::get('/edit_url/{id}', [SitemapController::class, 'edit'])->name('sitemap.edit');
     Route::patch('/update_url/{id}', [SitemapController::class, 'update'])->name('sitemap.update');
     Route::delete('/delete_url/{id}', [SitemapController::class, 'destroy'])->name('sitemap.delete');
     Route::delete('/delete_alternate/{id}', [SitemapController::class, 'deleteAlternate'])->name('alternate.delete');
 
     // Api routes 
-    Route::get('/index-sitemap', [ApiController::class, 'indexSitemap']);
+    // Route::get('/index-sitemap', [ApiController::class, 'indexSitemap']);
 
     // Robots Routes
     Route::get('/add_robots', [RobotsController::class, 'index'])->name('robots.add');

@@ -26,13 +26,24 @@
     @csrf
     @method('PATCH')
 
-    {{-- Google Indexing Checkbox --}}
-    <div class="form-group form-check mb-3">
-        <input type="checkbox" class="form-check-input" id="send_to_google" name="send_to_google" value="yes"
-            {{ old('send_to_google', $sitemap->send_to_google ?? 'no') === 'yes' ? 'checked' : '' }}>
-        <label class="form-check-label" for="send_to_google">
-            Send this URL to Google Indexing
-        </label>
+    <div class="d-flex">
+        {{-- Google Indexing Checkbox --}}
+        <div class="form-group form-check mb-3">
+            <input type="checkbox" class="form-check-input" id="send_to_google" name="send_to_google" value="yes"
+                {{ old('send_to_google', $sitemap->send_to_google ?? 'no') === 'yes' ? 'checked' : '' }}>
+            <label class="form-check-label" for="send_to_google">
+                Send this URL to Google Indexing
+            </label>
+        </div>
+
+        {{-- Indexnow Checkbox --}}
+        <div class="form-group form-check mb-3">
+            <input type="checkbox" class="form-check-input" id="send_to_indexnow" name="send_to_indexnow" value="yes"
+                {{ old('send_to_indexnow', $sitemap->send_to_indexnow ?? 'no') === 'yes' ? 'checked' : '' }}>
+            <label class="form-check-label" for="send_to_indexnow">
+                Send this URL to Bing Indexing
+            </label>
+        </div>
     </div>
 
     {{-- URL (user types slug here) --}}
@@ -53,6 +64,21 @@
         @error('url')
             <small class="text-danger">{{ $message }}</small>
         @enderror
+    </div>
+    
+    {{-- URL Inspection Section --}}
+    <div class="mt-4 mb-4 p-3 border rounded">
+        <h4>URL Inspection Status</h4>
+        <div class="d-flex align-items-center mb-3">
+            <button type="button" class="btn btn-info me-2" id="inspect-btn">
+                <span id="inspect-btn-text">Inspect URL</span>
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;" id="inspect-spinner"></span>
+            </button>
+            <span class="text-muted" id="inspection-message"></span>
+        </div>
+        <div id="inspection-results" style="display: none;">
+            {{-- Results will be displayed here --}}
+        </div>
     </div>
 
 
@@ -211,6 +237,86 @@
                 alert('An error occurred. Please try again.');
             });
     }
+
+    // Naya JavaScript Code (URL Inspection)
+    document.getElementById('inspect-btn').addEventListener('click', function() {
+        const url = document.getElementById('url').value;
+        const resultsDiv = document.getElementById('inspection-results');
+        const messageSpan = document.getElementById('inspection-message');
+        const spinner = document.getElementById('inspect-spinner');
+        const btnText = document.getElementById('inspect-btn-text');
+
+        if (!url) {
+            alert('Please enter a URL first.');
+            return;
+        }
+
+        // Button state badal den
+        btnText.style.display = 'none';
+        spinner.style.display = 'inline-block';
+        messageSpan.innerText = 'Inspecting...';
+        resultsDiv.style.display = 'none';
+        resultsDiv.innerHTML = '';
+
+        // Fetch call to the new controller method
+        fetch("{{ route('sitemap.inspect') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ url: url })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Button state wapas normal karen
+            btnText.style.display = 'inline';
+            spinner.style.display = 'none';
+
+            if (data.status === 'success') {
+                messageSpan.innerText = 'Inspection complete!';
+                resultsDiv.style.display = 'block';
+
+                const result = data.inspection_result.inspectionResult;
+                let html = '<h5>Inspection Details</h5>';
+                
+                // Indexing Status
+                const indexStatus = result.indexStatusResult;
+                html += `<p><strong>Google Indexing:</strong> ${indexStatus.coverageState}</p>`;
+                
+                // Last Crawl
+                if (indexStatus.lastCrawlTime) {
+                    const lastCrawl = new Date(indexStatus.lastCrawlTime).toLocaleString();
+                    html += `<p><strong>Last Crawl:</strong> ${lastCrawl}</p>`;
+                }
+
+                // Canonical URL
+                html += `<p><strong>Canonical:</strong> ${indexStatus.canonicalUrl}</p>`;
+
+                // Mobile-friendly
+                const mobileStatus = result.mobileUsabilityResult;
+                html += `<p><strong>Mobile-friendly:</strong> ${mobileStatus.verdict || 'Not Available'}</p>`;
+                
+                // Rich Results
+                if (result.richResultsResult && result.richResultsResult.verdict === 'PASS') {
+                    html += `<p><strong>Rich Results:</strong> ✅ Valid</p>`;
+                } else {
+                    html += `<p><strong>Rich Results:</strong> ❌ Invalid</p>`;
+                }
+
+                resultsDiv.innerHTML = html;
+
+            } else {
+                messageSpan.innerText = 'Failed: ' + data.message;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            btnText.style.display = 'inline';
+            spinner.style.display = 'none';
+            messageSpan.innerText = 'An error occurred during inspection.';
+        });
+    });
 </script>
 
 @endsection
