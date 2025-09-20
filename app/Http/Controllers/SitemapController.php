@@ -185,44 +185,69 @@ class SitemapController extends Controller
     
     // Naya method URL Inspection API ke liye
     // Is method ko apne AJAX request se call karen
-    public function inspectUrl(Request $request)
-    {
-        $url = $request->input('url');
-        if (!$url) {
-            return response()->json(['error' => 'URL is required.'], 400);
-        }
-
-        try {
-            $status = $this->checkUrlStatus($url);
-            return response()->json(['status' => 'success', 'inspection_result' => $status]);
-        } catch (\Exception $e) {
-            Log::error('URL Inspection failed: ' . $e->getMessage());
-            return response()->json(['status' => 'error', 'message' => 'Failed to inspect URL. ' . $e->getMessage()], 500);
-        }
+public function inspectUrl(Request $request)
+{
+    $url = $request->input('url');
+    if (!$url) {
+        return response()->json(['error' => 'URL is required.'], 400);
     }
+
+    // Force absolute URL if user gave relative path
+    if (!str_starts_with($url, 'http')) {
+        $url = 'https://devshieldit.com/' . ltrim($url, '/');
+    }
+
+    try {
+        $status = $this->checkUrlStatus($url);
+        return response()->json(['status' => 'success', 'inspection_result' => $status]);
+    } catch (\Exception $e) {
+        Log::error('URL Inspection failed: ' . $e->getMessage());
+        Log::error($e);
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Failed to inspect URL. ' . $e->getMessage()
+        ], 500);
+    }
+}
 
     // URL Inspection API ka private method
-    private function checkUrlStatus($url)
-    {
+private function checkUrlStatus($url)
+{
+    try {
         $client = new \Google_Client();
         $client->setAuthConfig(storage_path('app/google/service-account.json'));
-        // URL Inspection API ka naya scope shamil karen
-        $client->addScope('https://www.googleapis.com/auth/webmasters.readonly');
-    
-        $service = new \Google_Service_Webmasters($client);
-    
-        // Request body banayen
-        $request = new \Google_Service_Webmasters_InspectUrlIndexRequest();
-        $request->setInspectionUrl($url);
-        // Is line ko apni domain se badlen
-        $request->setSiteUrl('https://devshieldit.com/'); 
-    
-        // API call karen
-        $response = $service->urlInspection->get($request);
-    
-        // API ka response return karen
-        return $response;
+        // $client->addScope('https://www.googleapis.com/auth/webmasters.readonly');
+        $client->fetchAccessTokenWithAssertion();
+
+        $accessToken = $client->getAccessToken()['access_token'];
+
+        $httpClient = new \GuzzleHttp\Client();
+
+        $endpoint = 'https://searchconsole.googleapis.com/v1/urlInspection/index:inspect';
+
+        $payload = [
+            'inspectionUrl' => $url,
+            'siteUrl' => 'https://devshieldit.com/'
+        ];
+
+        $response = $httpClient->post($endpoint, [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $accessToken,
+                'Content-Type' => 'application/json',
+            ],
+            'json' => $payload,
+        ]);
+
+        return json_decode($response->getBody()->getContents(), true);
+    } catch (\GuzzleHttp\Exception\ClientException $e) {
+        Log::error('Google API Client Error: ' . $e->getMessage());
+        throw new \Exception('Google API Client Error: ' . $e->getMessage());
+    } catch (\Exception $e) {
+        Log::error('Google API General Error: ' . $e->getMessage());
+        throw new \Exception('Google API General Error: ' . $e->getMessage());
     }
+}
+
 
     public function update(Request $request, $id)
     {

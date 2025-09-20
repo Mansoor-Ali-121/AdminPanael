@@ -1,19 +1,20 @@
 <?php
 
+use App\Helpers\SitemapHelper;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ApiController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BlogsController;
+use Illuminate\Container\Attributes\Auth;
 use App\Http\Controllers\RobotsController;
+use App\Http\Controllers\BookingController;
+use App\Http\Controllers\DeBlogsController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\ServicesController;
 use App\Http\Controllers\CategoriesController;
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\UserRegisterController;
-use App\Helpers\SitemapHelper;
-use App\Http\Controllers\ApiController;
-use App\Http\Controllers\DeBlogsController;
-use Illuminate\Container\Attributes\Auth;
 
 Route::get('/', [Controller::class, 'index'])->name('home');
 Route::get('/about-us', [Controller::class, 'about'])->name('about');
@@ -27,9 +28,6 @@ Route::prefix('admin')->group(function () {
     Route::get('/', function () {
         return redirect()->route('user.login');
     });
-    Route::get('/dashboard', function () {
-        return redirect()->route('user.login');
-    });
     Route::get('/login', [AuthController::class, 'index'])->name('user.login');
     Route::post('/login', [AuthController::class, 'login']);
 });
@@ -37,6 +35,7 @@ Route::prefix('admin')->group(function () {
 // Admin Routes (With CheckAdmin middleware)
 Route::prefix('admin')->middleware('check.admin')->group(function () {
 
+    Route::get('/dashboard', [AuthController::class, 'dashboard'])->name('dashboard');
     Route::get('/logout', [AuthController::class, 'logout'])->name('user.logout');
     Route::get('/index', [AdminController::class, 'index'])->name('admin.home');
 
@@ -94,14 +93,11 @@ Route::prefix('admin')->middleware('check.admin')->group(function () {
     Route::patch('/services/update/{id}', [ServicesController::class, 'update'])->name('service.update');
     Route::delete('/services/delete/{id}', [ServicesController::class, 'destroy'])->name('service.delete');
 
-    // De German blogs
-    Route::get('/de/blogs/add', [DeBlogsController::class, 'deIndex'])->name('de.blog.add');
-    Route::post('/de/blogs/add', [DeBlogsController::class, 'deStore']);
-    Route::get('/de/blogs/show', [DeBlogsController::class, 'deShow'])->name('de.blog.show');
-    Route::get('/de/blogs/view/{id}', [DeBlogsController::class, 'deView'])->name('de.blog.view');
-    Route::get('/de/blogs/edit/{id}', [DeBlogsController::class, 'deEdit'])->name('de.blog.edit');
-    Route::patch('/de/blogs/update/{id}', [DeBlogsController::class, 'deUpdate'])->name('de.blog.update');
-    Route::delete('/de/blogs/delete/{id}', [DeBlogsController::class, 'deDestroy'])->name('de.blog.delete');
+
+    // Booking  route 
+    Route::get('/all-bookings', [BookingController::class, 'allbookings'])->name('allbookings');
+
+
 });
 // use App\Helpers\SitemapHelper;
 

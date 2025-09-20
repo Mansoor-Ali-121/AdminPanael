@@ -10,6 +10,13 @@
             <div class="list-group">
                 <div class="custom-sidebar-menu">
 
+
+                    <!-- Dashboard -->
+                    <a href="{{ route('dashboard') }}"
+                        class="sidebar-link {{ $segment2 === 'dashboard' ? 'active' : '' }}">
+                        Dashboard
+                    </a>
+
                     <!-- Blogs -->
                     <div class="sidebar-group has-submenu">
                         <span class="sidebar-link {{ $segment2 === 'blogs' || $segment2 === 'index' ? 'active' : '' }}">

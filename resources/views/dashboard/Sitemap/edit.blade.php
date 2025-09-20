@@ -156,15 +156,14 @@
 {{-- Scripts --}}
 <script>
     function generateurl() {
-        var slug = document.getElementById('actual_url').value.trim(); // user types here
+        var slug = document.getElementById('actual_url').value.trim();
         if (slug !== "") {
-            var fullUrl = 'https://devshieldit.com/' + slug; // domain
-            document.getElementById('url').value = fullUrl; // readonly field me assign
+            var fullUrl = 'https://devshieldit.com/' + slug;
+            document.getElementById('url').value = fullUrl;
         } else {
             document.getElementById('url').value = "";
         }
     }
-
 
     // Alternate Pages Handling
     let alternateIndex = 0;
@@ -196,7 +195,6 @@
         alternateIndex++;
     }
 
-    // Populate old alternates
     oldAlternates.forEach((alt, idx) => {
         const hreflang = alt.hreflang ?? '';
         const href = alt.href ?? '';
@@ -204,42 +202,39 @@
         addAlternate(hreflang, href, altId);
     });
 
-    // Remove dynamically added alternate
     document.addEventListener('click', function(e) {
         if (e.target && e.target.classList.contains('remove-alternate')) {
             e.target.closest('.alternate-group').remove();
         }
     });
 
-    // AJAX Delete alternate
     function deleteAlternate(id) {
         if (!confirm('Are you sure you want to delete this alternate?')) return;
 
         const url = "{{ route('alternate.delete', ['id' => ':id']) }}".replace(':id', id);
         fetch(url, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    document.getElementById('alternate-' + id).remove();
-                } else {
-                    alert(data.message || 'Failed to delete. Try again.');
-                }
-            })
-            .catch(err => {
-                console.error(err);
-                alert('An error occurred. Please try again.');
-            });
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                document.getElementById('alternate-' + id).remove();
+            } else {
+                alert(data.message || 'Failed to delete. Try again.');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('An error occurred. Please try again.');
+        });
     }
 
-    // Naya JavaScript Code (URL Inspection)
-    document.getElementById('inspect-btn').addEventListener('click', function() {
+    document.getElementById('inspect-btn').addEventListener('click', function () {
         const url = document.getElementById('url').value;
         const resultsDiv = document.getElementById('inspection-results');
         const messageSpan = document.getElementById('inspection-message');
@@ -251,25 +246,27 @@
             return;
         }
 
-        // Button state badal den
         btnText.style.display = 'none';
         spinner.style.display = 'inline-block';
         messageSpan.innerText = 'Inspecting...';
         resultsDiv.style.display = 'none';
         resultsDiv.innerHTML = '';
 
-        // Fetch call to the new controller method
         fetch("{{ route('sitemap.inspect') }}", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
-            body: JSON.stringify({ url: url })
+            body: JSON.stringify({ url }) // shorthand syntax for { url: url }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("HTTP status " + response.status);
+            }
+            return response.json();
+        })
         .then(data => {
-            // Button state wapas normal karen
             btnText.style.display = 'inline';
             spinner.style.display = 'none';
 
@@ -279,25 +276,20 @@
 
                 const result = data.inspection_result.inspectionResult;
                 let html = '<h5>Inspection Details</h5>';
-                
-                // Indexing Status
+
                 const indexStatus = result.indexStatusResult;
                 html += `<p><strong>Google Indexing:</strong> ${indexStatus.coverageState}</p>`;
-                
-                // Last Crawl
+
                 if (indexStatus.lastCrawlTime) {
                     const lastCrawl = new Date(indexStatus.lastCrawlTime).toLocaleString();
                     html += `<p><strong>Last Crawl:</strong> ${lastCrawl}</p>`;
                 }
 
-                // Canonical URL
                 html += `<p><strong>Canonical:</strong> ${indexStatus.canonicalUrl}</p>`;
 
-                // Mobile-friendly
                 const mobileStatus = result.mobileUsabilityResult;
                 html += `<p><strong>Mobile-friendly:</strong> ${mobileStatus.verdict || 'Not Available'}</p>`;
-                
-                // Rich Results
+
                 if (result.richResultsResult && result.richResultsResult.verdict === 'PASS') {
                     html += `<p><strong>Rich Results:</strong> ✅ Valid</p>`;
                 } else {
@@ -305,9 +297,8 @@
                 }
 
                 resultsDiv.innerHTML = html;
-
             } else {
-                messageSpan.innerText = 'Failed: ' + data.message;
+                messageSpan.innerText = 'Failed: ' + (data.message || 'Unknown error');
             }
         })
         .catch(error => {
@@ -318,5 +309,6 @@
         });
     });
 </script>
+
 
 @endsection

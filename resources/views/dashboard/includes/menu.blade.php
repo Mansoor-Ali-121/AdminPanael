@@ -9,7 +9,7 @@
         <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link mybtninadmin" href="{{ route('admin.home') }}">Dashboard</a>
+                    <a class="nav-link mybtninadmin" href="{{ route('dashboard') }}">Dashboard</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{{ route('user.show') }}">Users</a>
