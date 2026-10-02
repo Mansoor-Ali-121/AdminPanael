@@ -40,7 +40,7 @@ class UserRegisterController extends Controller
 
         // Hash the password before storing
         $ValidateData['password'] = Hash::make($ValidateData['password']);
-  
+
         User::create($ValidateData);
         return redirect()->route('user.add')->with('success', 'User Added Successfully');
     }

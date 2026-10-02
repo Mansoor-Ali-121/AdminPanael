@@ -14,7 +14,7 @@ class AdminController extends Controller
     {
         $blogs = BlogsModel::all();
         // return view('dashboard.Blogs.show', compact('blogs'));
-        return view('dashboard.pages.dashboard', compact('blogs'));
+        return view('dashboard.pages.main-dashboard', compact('blogs'));
     }
 
     /**
